@@ -26,17 +26,14 @@ plugins {
     id(libs.plugins.kotlin.android.get().pluginId) apply false
     id(libs.plugins.kotlin.jvm.get().pluginId) apply false
     alias(libs.plugins.kotlin.plugin.serialization) apply false
-    id(libs.plugins.kotlin.plugin.compose.get().pluginId) apply false
-//    id("org.jetbrains.kotlinx.atomicfu") version libs.versions.atomicfu apply false
-//    alias(libs.plugins.kotlinx.atomicfu) apply false
-    id(libs.plugins.compose.get().pluginId) apply false
+    id("org.jetbrains.kotlinx.atomicfu") version libs.versions.atomicfu apply false
     id(libs.plugins.android.library.get().pluginId) apply false
     id(libs.plugins.android.application.get().pluginId) apply false
     idea
 }
 
 allprojects {
-    group = "org.openani.mediamp"
+    group = "org.openani.anitorrent"
     version = properties["version.name"].toString()
 
     repositories {

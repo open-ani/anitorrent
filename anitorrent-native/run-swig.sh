@@ -1,0 +1,1 @@
+../../gradlew :torrent:anitorrent:generateSwig

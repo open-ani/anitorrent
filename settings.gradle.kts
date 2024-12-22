@@ -7,14 +7,13 @@
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
-rootProject.name = "mediamp"
+rootProject.name = "anitorrent"
 
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        mavenCentral()
         google()
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev") // Compose Multiplatform pre-release versions
+        mavenCentral()
     }
 }
 
@@ -22,9 +21,8 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
-include(":mediamp-api")
-include(":mediamp-core")
-//include(":mediamp-preview")
-include(":mediamp-source-kotlinx-io")
+include(":anitorrent-api")
+include(":anitorrent-core")
+include(":anitorrent-native")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
