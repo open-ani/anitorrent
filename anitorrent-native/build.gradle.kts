@@ -479,38 +479,13 @@ idea {
     }
 }
 
+description = "Anitorrent Native"
+
 mavenPublishing {
     configure(KotlinMultiplatform(JavadocJar.Empty(), true, androidVariantsToPublish = listOf("release", "debug")))
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
-
-    pom {
-        name = "Anitorrent Native"
-        description = "Anitorrent Native"
-        url = "https://github.com/open-ani/anitorrent"
-
-        licenses {
-            license {
-                name = "GNU General Public License, Version 3"
-                url = "https://github.com/open-ani/anitorrent/blob/main/LICENSE"
-                distribution = "https://www.gnu.org/licenses/gpl-3.0.txt"
-            }
-        }
-
-        developers {
-            developer {
-                id = "openani"
-                name = "OpenAni and contributors"
-                email = "support@openani.org"
-            }
-        }
-
-        scm {
-            connection = "scm:git:https://github.com/open-ani/anitorrent.git"
-            developerConnection = "scm:git:git@github.com:open-ani/anitorrent.git"
-            url = "https://github.com/open-ani/anitorrent"
-        }
-    }
+    configurePom(project)
 }
 
 tasks.matching { it.name.startsWith("publishDesktopPublicationTo") }.all {
