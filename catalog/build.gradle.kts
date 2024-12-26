@@ -21,7 +21,9 @@ description = "Anitorrent Version Catalogs"
 
 catalog {
     versionCatalog {
-        version("anitorrent-native", projects.anitorrentNative.version!!)
+        version("anitorrent", project.version.toString())
+        library("anitorrent-native", project.group.toString(), "anitorrent-native")
+            .versionRef("anitorrent")
     }
 }
 
