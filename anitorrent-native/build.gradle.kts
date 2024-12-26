@@ -19,7 +19,7 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")
     idea
-    alias(libs.plugins.vanniktech.mavenPublish)
+    id(libs.plugins.vanniktech.mavenPublish.get().pluginId)
 }
 
 val archs = buildList {

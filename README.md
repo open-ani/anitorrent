@@ -1,10 +1,34 @@
 # Anitorrent-native
 
-A wrapper of the [](https://github.com/arvidn/libtorrent) library for Kotlin Multiplatform Mobile.
+A wrapper of the [libtorrent](https://github.com/arvidn/libtorrent) library for Kotlin.
 
 Supported targets:
 
+- Desktop JVM: Windows x86_64, macOS x86_64, macOS AArch64
+- Android: armeabi-v7a, arm64-v8a, x86, x86_64
 
+## Installation
+
+From Maven Central. 
+
+```kotlin
+kotlin {
+    sourceSets {
+        val version = "0.1.0"
+        commonMain {
+            dependencies {
+                implementation("org.openani.anitorrent:anitorrent-native:0.1.0")
+            }
+        }
+        desktopMain {
+            dependencies {
+                implementation("org.openani.anitorrent:anitorrent-native:0.1.0:desktop")
+            }
+        }
+    }
+}
+
+```
 
 # License
 

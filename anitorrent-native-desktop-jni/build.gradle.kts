@@ -17,7 +17,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 plugins {
     java
     idea
-    alias(libs.plugins.vanniktech.mavenPublish)
+    id(libs.plugins.vanniktech.mavenPublish.get().pluginId)
 }
 
 java {
@@ -70,4 +70,8 @@ mavenPublishing {
             url = "https://github.com/open-ani/anitorrent"
         }
     }
+}
+
+tasks.getByName("sourcesJar") {
+    dependsOn(copyGeneratedSwigJava)
 }

@@ -27,4 +27,6 @@ include(":anitorrent-native")
 include(":anitorrent-native-desktop-jni")
 include(":ci-helper")
 
+include(":catalog")
+
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
