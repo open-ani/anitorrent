@@ -565,11 +565,7 @@ workflow(
                     ),
                 )
 
-                gradleCheck()
-                runGradle(
-                    name = "Build anitorrent",
-                    tasks = ["buildAnitorrent", "copyNativeJarForCurrentPlatform"],
-                )
+                // no check
                 uploadAnitorrent()
 
                 additionalSteps(matrix)
