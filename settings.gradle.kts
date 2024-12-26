@@ -21,8 +21,8 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 
-include(":anitorrent-api")
-include(":anitorrent-core")
+//include(":anitorrent-api")
+//include(":anitorrent-core")
 include(":anitorrent-native")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

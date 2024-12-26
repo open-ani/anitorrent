@@ -24,9 +24,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.withContext
 import kotlinx.io.IOException
-import org.openani.anitorrent.api.TorrentSession
-import org.openani.anitorrent.api.pieces.Piece
-import org.openani.anitorrent.api.pieces.PieceList
+import kotlinx.io.files.Path
 import me.him188.ani.utils.io.SeekableInput
 import me.him188.ani.utils.io.SystemPath
 import me.him188.ani.utils.io.absolutePath
@@ -35,6 +33,9 @@ import me.him188.ani.utils.io.length
 import me.him188.ani.utils.io.resolve
 import me.him188.ani.utils.logging.info
 import me.him188.ani.utils.logging.thisLogger
+import org.openani.anitorrent.api.TorrentSession
+import org.openani.anitorrent.api.pieces.Piece
+import org.openani.anitorrent.api.pieces.PieceList
 import kotlin.concurrent.Volatile
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -113,10 +114,10 @@ interface TorrentFileEntry { // 实现提示, 无 test mock
     /**
      * 绝对路径. 挂起直到文件路径可用 (即有任意一个 piece 下载完成时)
      */
-    suspend fun resolveFile(): SystemPath
+    suspend fun resolveFile(): Path
 
     @Throws(IOException::class)
-    fun resolveFileMaybeEmptyOrNull(): SystemPath?
+    fun resolveFileMaybeEmptyOrNull(): Path?
 
     /**
      * Opens the downloaded file as a [SeekableInput].
@@ -238,7 +239,7 @@ abstract class AbstractTorrentFileEntry(
 
     protected abstract fun updatePriority()
 
-    override suspend fun resolveFile(): SystemPath = resolveDownloadingFile()
+    override suspend fun resolveFile(): Path = resolveDownloadingFile()
 
     protected suspend fun resolveDownloadingFile(): SystemPath {
         while (true) {
@@ -258,7 +259,7 @@ abstract class AbstractTorrentFileEntry(
     }
 
     @Throws(IOException::class)
-    override fun resolveFileMaybeEmptyOrNull(): SystemPath? =
+    override fun resolveFileMaybeEmptyOrNull(): Path? =
         saveDirectory.resolve(relativePath).takeIf { it.isRegularFile() }
 
     override fun toString(): String {
