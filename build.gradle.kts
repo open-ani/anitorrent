@@ -63,7 +63,7 @@ subprojects {
         }
         tasks.withType<KotlinJvmCompile> {
             compilerOptions {
-                jvmTarget = JvmTarget.fromTarget(jdkVersion.toString())
+                jvmTarget = JvmTarget.fromTarget(jdkVersion.toString().let { if (it == "8") "1.8" else it })
             }
         }
         extensions.findByType(JavaPluginExtension::class.java)?.run {

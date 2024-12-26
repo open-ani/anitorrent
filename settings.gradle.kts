@@ -24,6 +24,7 @@ plugins {
 //include(":anitorrent-api")
 //include(":anitorrent-core")
 include(":anitorrent-native")
+include(":anitorrent-native-desktop-jni")
 include(":ci-helper")
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")

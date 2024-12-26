@@ -1,6 +1,10 @@
 # Anitorrent-native
 
-TODO
+A wrapper of the [](https://github.com/arvidn/libtorrent) library for Kotlin Multiplatform Mobile.
+
+Supported targets:
+
+
 
 # License
 

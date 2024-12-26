@@ -35,16 +35,34 @@ val archs = buildList {
 }
 
 kotlin {
+    jvmToolchain(8)
     jvm("desktop")
     androidTarget()
 
     applyDefaultHierarchyTemplate {
-        group("jvm") {
-            withJvm()
-            withAndroidTarget()
+        common {
+            group("jvm") {
+                withJvm()
+                withAndroidTarget()
+            }
+        }
+    }
+
+    sourceSets {
+//        androidMain {
+//            kotlin.srcDirs(listOf("gen/java"))
+//        }
+        getByName("jvmMain") {
+            dependencies {
+                api(projects.anitorrentNativeDesktopJni)
+            }
         }
     }
 }
+
+//kotlin.sourceSets.getByName("jvmMain") {
+//    java.setSrcDirs(listOf("gen/java"))
+//}
 
 android {
     namespace = "org.openani.anitorrent.natives"
@@ -117,10 +135,6 @@ android {
     }
 }
 
-//sourceSets.getByName("jvmMain") {
-//    java.setSrcDirs(listOf("gen/java"))
-//}
-
 /// ANITORRENT
 
 val anitorrentRootDir = projectDir
@@ -129,7 +143,7 @@ val anitorrentBuildDir = anitorrentRootDir.resolve("build-ci")
 val generateSwigImpl = tasks.register("generateSwigImpl", Exec::class.java) {
     group = "anitorrent"
 
-    val swig = System.getenv("SWIG") ?: "swig"
+    val swig = getLocalProperty("SWIG") ?: "swig"
 //    swig -java -c++ \
 //    -o ./src/anitorrent_wrap.cpp \
 //    -outdir ./java/me/him188/ani/app/torrent/anitorrent/binding \
@@ -143,13 +157,13 @@ val generateSwigImpl = tasks.register("generateSwigImpl", Exec::class.java) {
     outputs.dir(anitorrentRootDir.resolve("gen/java"))
 
     val cppDir = anitorrentRootDir.resolve("gen/cpp")
-    val javaDir = anitorrentRootDir.resolve("gen/java/me/him188/ani/app/torrent/anitorrent/binding")
+    val javaDir = anitorrentRootDir.resolve("gen/org/openani/anitorrent/binding/")
     commandLine = listOf(
         swig,
         "-java", "-c++", "-directors", "-cppext", "cpp", "-addextern",
         "-o", cppDir.resolve("anitorrent_wrap.cpp").absolutePath,
         "-outdir", javaDir.absolutePath,
-        "-package", "me.him188.ani.app.torrent.anitorrent.binding",
+        "-package", "org.openani.anitorrent.binding",
         swigI.absolutePath,
     )
     doFirst {
@@ -499,11 +513,24 @@ mavenPublishing {
     }
 }
 
+tasks.matching { it.name.startsWith("publishDesktopPublicationTo") }.all {
+    dependsOn(copyNativeJarForCurrentPlatform)
+}
+
+tasks.getByName("signDesktopPublication") {
+    dependsOn(copyNativeJarForCurrentPlatform)
+}
+
 afterEvaluate {
     publishing {
         publications {
             getByName("desktop", MavenPublication::class) {
-                supportedOsTriples.forEach { platform ->
+                val platforms = if (getLocalProperty("ani.publishing.onlyHostOS") == "true") {
+                    listOf("macos-aarch64")
+                } else {
+                    supportedOsTriples
+                }
+                platforms.forEach { platform ->
                     artifact(nativeJarsDir.map { it.file("${project.name}-${project.version}-$platform.jar") }) {
                         classifier = platform
                     }
