@@ -54,7 +54,6 @@ import io.github.typesafegithub.workflows.domain.JobOutputs
 import io.github.typesafegithub.workflows.domain.Mode
 import io.github.typesafegithub.workflows.domain.Permission
 import io.github.typesafegithub.workflows.domain.RunnerType
-import io.github.typesafegithub.workflows.domain.Step
 import io.github.typesafegithub.workflows.domain.triggers.PullRequest
 import io.github.typesafegithub.workflows.domain.triggers.Push
 import io.github.typesafegithub.workflows.dsl.JobBuilder
@@ -396,11 +395,7 @@ val buildMatrixInstances = listOf(
     ),
 )
 
-class BuildJobOutputs : JobOutputs() {
-    var macosAarch64Success by output()
-    var macosX64Success by output()
-    var windowsX64Success by output()
-}
+class BuildJobOutputs : JobOutputs()
 
 fun getBuildJobBody(matrix: MatrixInstance): JobBuilder<BuildJobOutputs>.() -> Unit = {
     uses(action = Checkout(submodules_Untyped = "recursive"))
@@ -832,13 +827,6 @@ class WithMatrix(
                 ),
             )
         }
-    }
-
-    class UploadAnitorrentResult {
-        // null means not enabled on this machine
-        var macosAarch64: Step<*>.Outcome? = null
-        var macosX64: Step<*>.Outcome? = null
-        var windowsX64: Step<*>.Outcome? = null
     }
 
     fun JobBuilder<*>.uploadAnitorrent(): ActionStep<UploadArtifact.Outputs> {
