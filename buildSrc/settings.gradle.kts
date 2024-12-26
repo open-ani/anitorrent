@@ -1,4 +1,4 @@
-rootProject.name = "mediamp"
+rootProject.name = "anitorrent"
 
 dependencyResolutionManagement {
     versionCatalogs {

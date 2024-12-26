@@ -241,8 +241,8 @@ val copyNativeFiles by tasks.registering {
                     Os.Windows -> {
                         add(anitorrentBuildDir.resolve("$buildType/anitorrent.dll"))
                         add(anitorrentBuildDir.resolve("_deps/libtorrent-build/$buildType/torrent-rasterbar.dll"))
-                        addIfExist(anitorrentBuildDir.resolve("_deps/libtorrent-build/$buildType/libssl-3-x64.dll"))
-                        addIfExist(anitorrentBuildDir.resolve("_deps/libtorrent-build/$buildType/libcrypto-3-x64.dll"))
+//                        addIfExist(anitorrentBuildDir.resolve("_deps/libtorrent-build/$buildType/libssl-3-x64.dll"))
+//                        addIfExist(anitorrentBuildDir.resolve("_deps/libtorrent-build/$buildType/libcrypto-3-x64.dll"))
                     }
 
                     Os.MacOS -> {
@@ -326,12 +326,28 @@ val copyNativeFiles by tasks.registering {
     }
 }
 
-sourceSets.main {
-    resources.srcDir(copyNativeFiles.map { it.outputs.files.singleFile })
-}
-
 tasks.compileJava {
     dependsOn(copyNativeFiles)
+}
+
+val supportedOsTriples = listOf("macos-arm64", "macos-x64", "windows-x64")
+
+val nativeJarsDir = layout.buildDirectory.dir("native-jars")
+val nativeJarForCurrentPlatform = tasks.register("nativeJarForCurrentPlatform", Jar::class.java) {
+    dependsOn(copyNativeFiles)
+    description =
+        "Create a jar for the native files for current platform, saving it to libs/anitorrent-native-0.1.0-macos-arm64.jar"
+    group = "anitorrent"
+    archiveClassifier.set(getOsTriple())
+    from(copyNativeFiles.map { it.outputs.files.singleFile.listFiles().orEmpty() })
+}
+val copyNativeJarForCurrentPlatform = tasks.register("copyNativeJarForCurrentPlatform", Copy::class.java) {
+    dependsOn(nativeJarForCurrentPlatform)
+    description =
+        "Copy native jar for current platform, saving it to build/native-jars/anitorrent-native-0.1.0-macos-arm64.jar"
+    group = "anitorrent"
+    from(nativeJarForCurrentPlatform.flatMap { it.archiveFile })
+    into(nativeJarsDir)
 }
 
 idea {
@@ -380,17 +396,14 @@ mavenPublishing {
     }
 }
 
-val nativeJar = tasks.register("nativeJar", Jar::class.java) {
-    dependsOn(copyNativeFiles)
-    group = "anitorrent"
-    archiveClassifier.set(getOsTriple())
-    from(copyNativeFiles.map { it.outputs.files.singleFile })
-}
-
 publishing {
     publications {
         getByName("maven", MavenPublication::class) {
-            artifact(nativeJar)
+            supportedOsTriples.forEach { platform ->
+                artifact(nativeJarsDir.map { it.file("${project.name}-${project.version}-$platform.jar") }) {
+                    classifier = platform
+                }
+            }
         }
     }
 }
