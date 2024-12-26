@@ -330,7 +330,7 @@ tasks.compileJava {
     dependsOn(copyNativeFiles)
 }
 
-val supportedOsTriples = listOf("macos-arm64", "macos-x64", "windows-x64")
+val supportedOsTriples = listOf("macos-aarch64", "macos-x64", "windows-x64")
 
 val nativeJarsDir = layout.buildDirectory.dir("native-jars")
 val nativeJarForCurrentPlatform = tasks.register("nativeJarForCurrentPlatform", Jar::class.java) {
@@ -348,6 +348,10 @@ val copyNativeJarForCurrentPlatform = tasks.register("copyNativeJarForCurrentPla
     group = "anitorrent"
     from(nativeJarForCurrentPlatform.flatMap { it.archiveFile })
     into(nativeJarsDir)
+}
+
+tasks.named("assemble") {
+    dependsOn(copyNativeJarForCurrentPlatform)
 }
 
 idea {
