@@ -1,7 +1,3 @@
-import com.vanniktech.maven.publish.JavaLibrary
-import com.vanniktech.maven.publish.JavadocJar
-import com.vanniktech.maven.publish.SonatypeHost
-
 /*
  * Copyright (C) 2024 OpenAni and contributors.
  *
@@ -11,15 +7,119 @@ import com.vanniktech.maven.publish.SonatypeHost
  * https://github.com/open-ani/ani/blob/main/LICENSE
  */
 
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
+
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.KotlinMultiplatform
+import com.vanniktech.maven.publish.SonatypeHost
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompileCommon
+
 plugins {
-    java
+    kotlin("multiplatform")
+    id("com.android.library")
     idea
     alias(libs.plugins.vanniktech.mavenPublish)
 }
 
-sourceSets.main {
-    java.setSrcDirs(listOf("gen/java"))
+val archs = buildList {
+    val abis = getPropertyOrNull("ani.android.abis")?.trim()
+    if (!abis.isNullOrEmpty()) {
+        addAll(abis.split(",").map { it.trim() })
+    } else {
+        add("arm64-v8a")
+        add("armeabi-v7a")
+        add("x86_64")
+        add("x86")
+    }
 }
+
+kotlin {
+    jvm("desktop")
+    androidTarget()
+
+    applyDefaultHierarchyTemplate {
+        group("jvm") {
+            withJvm()
+            withAndroidTarget()
+        }
+    }
+}
+
+android {
+    namespace = "org.openani.anitorrent.natives"
+    compileSdk = getIntProperty("android.compile.sdk")
+    defaultConfig {
+        minSdk = getIntProperty("android.min.sdk")
+        testOptions.targetSdk = getIntProperty("android.compile.sdk")
+        ndk {
+            // Specifies the ABI configurations of your native
+            // libraries Gradle should build and package with your app.
+            abiFilters.clear()
+            //noinspection ChromeOsAbiSupport
+            abiFilters += archs
+        }
+    }
+    splits {
+        abi {
+            isEnable = true
+            reset()
+            //noinspection ChromeOsAbiSupport
+            include(*archs.toTypedArray())
+            isUniversalApk = true // 额外构建一个
+        }
+    }
+    signingConfigs {
+        kotlin.runCatching { getProperty("signing_release_storeFileFromRoot") }.getOrNull()?.let {
+            create("release") {
+                storeFile = rootProject.file(it)
+                storePassword = getProperty("signing_release_storePassword")
+                keyAlias = getProperty("signing_release_keyAlias")
+                keyPassword = getProperty("signing_release_keyPassword")
+            }
+        }
+        kotlin.runCatching { getProperty("signing_release_storeFile") }.getOrNull()?.let {
+            create("release") {
+                storeFile = file(it)
+                storePassword = getProperty("signing_release_storePassword")
+                keyAlias = getProperty("signing_release_keyAlias")
+                keyPassword = getProperty("signing_release_keyPassword")
+            }
+        }
+    }
+    packaging {
+        resources {
+            merges.add("META-INF/DEPENDENCIES") // log4j
+        }
+    }
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            signingConfig = signingConfigs.findByName("release")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                *sharedAndroidProguardRules(),
+            )
+        }
+        debug {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+    externalNativeBuild {
+        cmake {
+            path = projectDir.resolve("CMakeLists.txt")
+        }
+    }
+}
+
+//sourceSets.getByName("jvmMain") {
+//    java.setSrcDirs(listOf("gen/java"))
+//}
 
 /// ANITORRENT
 
@@ -328,8 +428,9 @@ val copyNativeFiles by tasks.registering {
     }
 }
 
-tasks.compileJava {
+tasks.withType(KotlinCompileCommon::class) {
     dependsOn(copyNativeFiles)
+    mustRunAfter(generateSwigImpl)
 }
 
 val supportedOsTriples = listOf("macos-aarch64", "macos-x64", "windows-x64")
@@ -364,12 +465,8 @@ idea {
     }
 }
 
-tasks.named("compileJava") {
-    mustRunAfter(generateSwigImpl)
-}
-
 mavenPublishing {
-    configure(JavaLibrary(JavadocJar.Empty(), true))
+    configure(KotlinMultiplatform(JavadocJar.Empty(), true, androidVariantsToPublish = listOf("release", "debug")))
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
 
@@ -402,12 +499,14 @@ mavenPublishing {
     }
 }
 
-publishing {
-    publications {
-        getByName("maven", MavenPublication::class) {
-            supportedOsTriples.forEach { platform ->
-                artifact(nativeJarsDir.map { it.file("${project.name}-${project.version}-$platform.jar") }) {
-                    classifier = platform
+afterEvaluate {
+    publishing {
+        publications {
+            getByName("desktop", MavenPublication::class) {
+                supportedOsTriples.forEach { platform ->
+                    artifact(nativeJarsDir.map { it.file("${project.name}-${project.version}-$platform.jar") }) {
+                        classifier = platform
+                    }
                 }
             }
         }

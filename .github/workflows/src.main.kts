@@ -385,7 +385,7 @@ val buildMatrixInstances = listOf(
         composeResourceTriple = "macos-arm64",
         uploadDesktopInstallers = true,
         extraGradleArgs = listOf(
-            "-P$ANI_ANDROID_ABIS=arm64-v8a",
+            "-P$ANI_ANDROID_ABIS=arm64-v8a", // speed up testing
         ),
         buildIosFramework = false,
         gradleHeap = "6g",
