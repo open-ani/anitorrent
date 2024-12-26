@@ -272,11 +272,13 @@ val copyNativeFiles by tasks.registering {
         }
 
         val dependencies = buildMap {
-            map["OPENSSL_CRYPTO_LIBRARY:FILEPATH"]?.let {
-                put("OPENSSL_CRYPTO_LIBRARY", File(it))
-            }
-            map["OPENSSL_SSL_LIBRARY:FILEPATH"]?.let {
-                put("OPENSSL_SSL_LIBRARY", File(it))
+            if (os != Os.MacOS) { // macos uses static linking
+                map["OPENSSL_CRYPTO_LIBRARY:FILEPATH"]?.let {
+                    put("OPENSSL_CRYPTO_LIBRARY", File(it))
+                }
+                map["OPENSSL_SSL_LIBRARY:FILEPATH"]?.let {
+                    put("OPENSSL_SSL_LIBRARY", File(it))
+                }
             }
 
             if (os == Os.Windows) {
