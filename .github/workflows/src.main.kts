@@ -565,6 +565,11 @@ workflow(
                     ),
                 )
 
+
+                runGradle(
+                    name = "Build anitorrent",
+                    tasks = ["buildAnitorrent", "copyNativeJarForCurrentPlatform"],
+                )
                 // no check
                 uploadAnitorrent()
 
