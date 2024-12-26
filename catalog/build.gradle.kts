@@ -22,8 +22,22 @@ description = "Anitorrent Version Catalogs"
 catalog {
     versionCatalog {
         version("anitorrent", project.version.toString())
-        library("anitorrent-native", project.group.toString(), "anitorrent-native")
-            .versionRef("anitorrent")
+        library("anitorrent-native", project.group.toString(), "anitorrent-native").versionRef("anitorrent")
+        library(
+            "anitorrent-native-android",
+            project.group.toString(),
+            "anitorrent-native-android",
+        ).versionRef("anitorrent")
+        library(
+            "anitorrent-native-desktop",
+            project.group.toString(),
+            "anitorrent-native-desktop",
+        ).versionRef("anitorrent")
+        library(
+            "anitorrent-native-desktop-jni",
+            project.group.toString(),
+            "anitorrent-native-desktop-jni",
+        ).versionRef("anitorrent")
     }
 }
 
