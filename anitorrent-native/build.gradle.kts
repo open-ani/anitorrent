@@ -157,7 +157,7 @@ val generateSwigImpl = tasks.register("generateSwigImpl", Exec::class.java) {
     outputs.dir(anitorrentRootDir.resolve("gen/java"))
 
     val cppDir = anitorrentRootDir.resolve("gen/cpp")
-    val javaDir = anitorrentRootDir.resolve("gen/org/openani/anitorrent/binding/")
+    val javaDir = anitorrentRootDir.resolve("gen/java/org/openani/anitorrent/binding/")
     commandLine = listOf(
         swig,
         "-java", "-c++", "-directors", "-cppext", "cpp", "-addextern",
