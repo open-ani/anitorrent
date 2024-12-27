@@ -13,7 +13,7 @@ import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompileCommon
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 plugins {
     kotlin("multiplatform")
@@ -152,7 +152,7 @@ val generateSwigImpl = tasks.register("generateSwigImpl", Exec::class.java) {
 
     val swigI = anitorrentRootDir.resolve("anitorrent.i")
     inputs.file(swigI)
-    inputs.dir(anitorrentRootDir.resolve("include"))
+    inputs.dir(anitorrentRootDir.resolve("cpp/include"))
     outputs.file(anitorrentRootDir.resolve("gen/cpp/anitorrent_wrap.cpp"))
     outputs.dir(anitorrentRootDir.resolve("gen/java"))
 
@@ -297,8 +297,8 @@ val buildAnitorrent = tasks.register("buildAnitorrent", Exec::class.java) {
     val buildType = getPropertyOrNull("CMAKE_BUILD_TYPE") ?: "Debug"
 
     inputs.file(anitorrentRootDir.resolve("CMakeLists.txt"))
-    inputs.dir(anitorrentRootDir.resolve("include"))
-    inputs.dir(anitorrentRootDir.resolve("src"))
+    inputs.dir(anitorrentRootDir.resolve("cpp/include"))
+    inputs.dir(anitorrentRootDir.resolve("cpp/src"))
     inputs.file(anitorrentRootDir.resolve("gen/cpp/anitorrent_wrap.cpp"))
     outputs.dir(anitorrentBuildDir)
 
@@ -442,7 +442,7 @@ val copyNativeFiles by tasks.registering {
     }
 }
 
-tasks.withType(KotlinCompileCommon::class) {
+tasks.withType(KotlinJvmCompile::class) {
     dependsOn(copyNativeFiles)
     mustRunAfter(generateSwigImpl)
 }
@@ -453,7 +453,7 @@ val nativeJarsDir = layout.buildDirectory.dir("native-jars")
 val nativeJarForCurrentPlatform = tasks.register("nativeJarForCurrentPlatform", Jar::class.java) {
     dependsOn(copyNativeFiles)
     description =
-        "Create a jar for the native files for current platform, saving it to libs/anitorrent-native-0.1.0-macos-arm64.jar"
+        "Create a jar for the native files for current platform, saving it to build/libs/anitorrent-native-0.1.0-macos-arm64.jar"
     group = "anitorrent"
     archiveClassifier.set(getOsTriple())
     from(copyNativeFiles.map { it.outputs.files.singleFile.listFiles().orEmpty() })

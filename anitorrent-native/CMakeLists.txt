@@ -63,7 +63,7 @@ if (NOT DEFINED Boost_INCLUDE_DIR)
     #    FetchContent_MakeAvailable(boost)
     #    set(Boost_INCLUDE_DIR ${boost_SOURCE_DIR})
 
-    set(Boost_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/libs/boost/)
+    set(Boost_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/cpp/libs/boost/)
 endif ()
 
 # Fetch and build OpenSSL for Android using CMake
@@ -127,27 +127,27 @@ endif ()
 
 add_library(anitorrent
         SHARED
-        include/anitorrent.hpp
-        src/anitorrent.cpp
+        cpp/include/anitorrent.hpp
+        cpp/src/anitorrent.cpp
         gen/cpp/anitorrent_wrap.cpp # 如果你找不到这个文件, 在项目根目录跑一下 ./gradlew build
-        src/events.cpp
-        include/events.hpp
-        src/torrent_info_t.cpp
-        include/torrent_info_t.hpp
-        src/torrent_add_info_t.cpp
-        include/torrent_add_info_t.hpp
-        src/session_t.cpp
-        include/session_t.hpp
-        src/torrent_handle_t.cpp
-        include/torrent_handle_t.hpp
-        src/global_lock.cpp
-        include/global_lock.h
-        include/plugin/peer_filter_plugin.h
-        src/plugin/peer_filter_plugin.cpp
-        include/peer_filter.hpp
-        src/peer_filter.cpp
+        cpp/src/events.cpp
+        cpp/include/events.hpp
+        cpp/src/torrent_info_t.cpp
+        cpp/include/torrent_info_t.hpp
+        cpp/src/torrent_add_info_t.cpp
+        cpp/include/torrent_add_info_t.hpp
+        cpp/src/session_t.cpp
+        cpp/include/session_t.hpp
+        cpp/src/torrent_handle_t.cpp
+        cpp/include/torrent_handle_t.hpp
+        cpp/src/global_lock.cpp
+        cpp/include/global_lock.h
+        cpp/include/plugin/peer_filter_plugin.h
+        cpp/src/plugin/peer_filter_plugin.cpp
+        cpp/include/peer_filter.hpp
+        cpp/src/peer_filter.cpp
 )
-target_include_directories(anitorrent PRIVATE include)
+target_include_directories(anitorrent PRIVATE cpp/include)
 
 # Link libraries
 if (ANDROID)

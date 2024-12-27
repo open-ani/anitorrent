@@ -22,11 +22,11 @@
 %include stdint.i
 %include "arrays_java.i"
 
-%include "include/torrent_info_t.hpp"
-%include "include/torrent_add_info_t.hpp"
-%include "include/torrent_handle_t.hpp"
-%include "include/events.hpp"
-%include "include/peer_filter.hpp"
-%include "include/session_t.hpp"
-%include "include/anitorrent.hpp"
+%include "cpp/include/torrent_info_t.hpp"
+%include "cpp/include/torrent_add_info_t.hpp"
+%include "cpp/include/torrent_handle_t.hpp"
+%include "cpp/include/events.hpp"
+%include "cpp/include/peer_filter.hpp"
+%include "cpp/include/session_t.hpp"
+%include "cpp/include/anitorrent.hpp"
 
