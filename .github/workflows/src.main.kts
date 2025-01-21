@@ -20,7 +20,7 @@
 
 // Build
 @file:DependsOn("actions:checkout:v4")
-@file:DependsOn("gmitch215:setup-java:6d2c5e1f82f180ae79f799f0ed6e3e5efb4e664d")
+@file:DependsOn("actions:setup-java:v4")
 @file:DependsOn("org.jetbrains:annotations:23.0.0")
 @file:DependsOn("actions:github-script:v7")
 @file:DependsOn("gradle:actions__setup-gradle:v3")
@@ -40,10 +40,10 @@ import Secrets.GITHUB_REPOSITORY
 import io.github.typesafegithub.workflows.actions.actions.Checkout
 import io.github.typesafegithub.workflows.actions.actions.DownloadArtifact
 import io.github.typesafegithub.workflows.actions.actions.GithubScript
+import io.github.typesafegithub.workflows.actions.actions.SetupJava
 import io.github.typesafegithub.workflows.actions.actions.UploadArtifact
 import io.github.typesafegithub.workflows.actions.bhowell2.GithubSubstringAction_Untyped
 import io.github.typesafegithub.workflows.actions.dawidd6.ActionGetTag_Untyped
-import io.github.typesafegithub.workflows.actions.gmitch215.SetupJava_Untyped
 import io.github.typesafegithub.workflows.actions.gradle.ActionsSetupGradle
 import io.github.typesafegithub.workflows.actions.nickfields.Retry_Untyped
 import io.github.typesafegithub.workflows.actions.softprops.ActionGhRelease
@@ -402,7 +402,7 @@ fun getBuildJobBody(matrix: MatrixInstance): JobBuilder<BuildJobOutputs>.() -> U
 
     with(WithMatrix(matrix)) {
         freeSpace()
-        installJbr21()
+        installJdk()
         installNativeDeps()
         chmod777()
         setupGradle()
@@ -549,7 +549,7 @@ workflow(
                 val gitTag = getGitTag()
 
                 freeSpace()
-                installJbr21()
+                installJdk()
                 installNativeDeps()
                 chmod777()
                 setupGradle()
@@ -678,86 +678,15 @@ class WithMatrix(
         }
     }
 
-    fun JobBuilder<*>.installJbr21() {
-        // For mac
-        val jbrUrl = "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_jcef-21.0.5-osx-aarch64-b631.8.tar.gz"
-        val jbrChecksumUrl =
-            "https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_jcef-21.0.5-osx-aarch64-b631.8.tar.gz.checksum"
-
-        val jbrFilename = jbrUrl.substringAfterLast('/')
-
-        when (matrix.runner.os to matrix.runner.arch) {
-            OS.MACOS to Arch.AARCH64 -> {
-                val jbrLocationExpr = run(
-                    name = "Resolve JBR location",
-                    command = shell(
-                        $$"""
-            # Expand jbrLocationExpr
-            jbr_location_expr=$(eval echo $${expr { runner.tool_cache } + "/" + jbrFilename})
-            echo "jbrLocation=$jbr_location_expr" >> $GITHUB_OUTPUT
-            """.trimIndent(),
-                    ),
-                ).outputs["jbrLocation"]
-
-                run(
-                    name = "Get JBR 21 for macOS AArch64",
-                    command = shell(
-                        $$"""
-        jbr_location="$jbrLocation"
-        checksum_url="$$jbrChecksumUrl"
-        checksum_file="checksum.tmp"
-        wget -q -O $checksum_file $checksum_url
-
-        expected_checksum=$(awk '{print $1}' $checksum_file)
-        file_checksum=""
-        
-        if [ -f "$jbr_location" ]; then
-            file_checksum=$(shasum -a 512 "$jbr_location" | awk '{print $1}')
-        fi
-        
-        if [ "$file_checksum" != "$expected_checksum" ]; then
-            wget -q --tries=3 $$jbrUrl -O "$jbr_location"
-            file_checksum=$(shasum -a 512 "$jbr_location" | awk '{print $1}')
-        fi
-        
-        if [ "$file_checksum" != "$expected_checksum" ]; then
-            echo "Checksum verification failed!" >&2
-            rm -f $checksum_file
-            exit 1
-        fi
-        
-        rm -f $checksum_file
-        file "$jbr_location"
-    """.trimIndent(),
-                    ),
-                    env = mapOf(
-                        "jbrLocation" to expr { jbrLocationExpr },
-                    ),
-                )
-
-                uses(
-                    name = "Setup JBR 21 for macOS AArch64",
-                    action = SetupJava_Untyped(
-                        distribution_Untyped = "jdkfile",
-                        javaVersion_Untyped = "21",
-                        jdkFile_Untyped = expr { jbrLocationExpr },
-                    ),
-                    env = mapOf("GITHUB_TOKEN" to expr { secrets.GITHUB_TOKEN }),
-                )
-            }
-
-            else -> {
-                // For Windows + Ubuntu
-                uses(
-                    name = "Setup JBR 21 for other OS",
-                    action = SetupJava_Untyped(
-                        distribution_Untyped = "jetbrains",
-                        javaVersion_Untyped = "21",
-                    ),
-                    env = mapOf("GITHUB_TOKEN" to expr { secrets.GITHUB_TOKEN }),
-                )
-            }
-        }
+    fun JobBuilder<*>.installJdk() {
+        uses(
+            name = "Setup JDK 21 for other OS",
+            action = SetupJava(
+                distribution = SetupJava.Distribution.Temurin,
+                javaVersion = "21",
+            ),
+            env = mapOf("GITHUB_TOKEN" to expr { secrets.GITHUB_TOKEN }),
+        )
 
         run(
             command = shell($$"""echo "jvm.toolchain.version=21" >> local.properties"""),

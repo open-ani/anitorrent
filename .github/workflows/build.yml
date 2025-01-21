@@ -23,11 +23,11 @@ jobs:
       with:
         submodules: 'recursive'
     - id: 'step-1'
-      name: 'Setup JBR 21 for other OS'
-      uses: 'gmitch215/setup-java@6d2c5e1f82f180ae79f799f0ed6e3e5efb4e664d'
+      name: 'Setup JDK 21 for other OS'
+      uses: 'actions/setup-java@v4'
       with:
         java-version: '21'
-        distribution: 'jetbrains'
+        distribution: 'temurin'
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
     - id: 'step-2'
@@ -90,11 +90,11 @@ jobs:
       continue-on-error: true
       run: 'chmod +x ./ci-helper/free-space-macos.sh && ./ci-helper/free-space-macos.sh'
     - id: 'step-2'
-      name: 'Setup JBR 21 for other OS'
-      uses: 'gmitch215/setup-java@6d2c5e1f82f180ae79f799f0ed6e3e5efb4e664d'
+      name: 'Setup JDK 21 for other OS'
+      uses: 'actions/setup-java@v4'
       with:
         java-version: '21'
-        distribution: 'jetbrains'
+        distribution: 'temurin'
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
     - id: 'step-3'
@@ -149,77 +149,40 @@ jobs:
       with:
         submodules: 'recursive'
     - id: 'step-1'
-      name: 'Resolve JBR location'
-      run: |-
-        # Expand jbrLocationExpr
-        jbr_location_expr=$(eval echo ${{ runner.tool_cache }}/jbrsdk_jcef-21.0.5-osx-aarch64-b631.8.tar.gz)
-        echo "jbrLocation=$jbr_location_expr" >> $GITHUB_OUTPUT
-    - id: 'step-2'
-      name: 'Get JBR 21 for macOS AArch64'
-      env:
-        jbrLocation: '${{ steps.step-1.outputs.jbrLocation }}'
-      run: |-
-        jbr_location="$jbrLocation"
-        checksum_url="https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_jcef-21.0.5-osx-aarch64-b631.8.tar.gz.checksum"
-        checksum_file="checksum.tmp"
-        wget -q -O $checksum_file $checksum_url
-
-        expected_checksum=$(awk '{print $1}' $checksum_file)
-        file_checksum=""
-
-        if [ -f "$jbr_location" ]; then
-            file_checksum=$(shasum -a 512 "$jbr_location" | awk '{print $1}')
-        fi
-
-        if [ "$file_checksum" != "$expected_checksum" ]; then
-            wget -q --tries=3 https://cache-redirector.jetbrains.com/intellij-jbr/jbrsdk_jcef-21.0.5-osx-aarch64-b631.8.tar.gz -O "$jbr_location"
-            file_checksum=$(shasum -a 512 "$jbr_location" | awk '{print $1}')
-        fi
-
-        if [ "$file_checksum" != "$expected_checksum" ]; then
-            echo "Checksum verification failed!" >&2
-            rm -f $checksum_file
-            exit 1
-        fi
-
-        rm -f $checksum_file
-        file "$jbr_location"
-    - id: 'step-3'
-      name: 'Setup JBR 21 for macOS AArch64'
-      uses: 'gmitch215/setup-java@6d2c5e1f82f180ae79f799f0ed6e3e5efb4e664d'
+      name: 'Setup JDK 21 for other OS'
+      uses: 'actions/setup-java@v4'
       with:
         java-version: '21'
-        distribution: 'jdkfile'
-        jdkFile: '${{ steps.step-1.outputs.jbrLocation }}'
+        distribution: 'temurin'
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-    - id: 'step-4'
+    - id: 'step-2'
       run: 'echo "jvm.toolchain.version=21" >> local.properties'
-    - id: 'step-5'
+    - id: 'step-3'
       run: 'chmod -R 777 .'
-    - id: 'step-6'
+    - id: 'step-4'
       name: 'Setup Gradle'
       uses: 'gradle/actions/setup-gradle@v3'
       with:
         cache-disabled: 'true'
-    - id: 'step-7'
+    - id: 'step-5'
       name: 'Clean and download dependencies'
       uses: 'nick-fields/retry@v2'
       with:
         timeout_minutes: '60'
         max_attempts: '3'
         command: './gradlew "--scan" "--no-configuration-cache" "-Porg.gradle.daemon.idletimeout=60000" "-Pkotlin.native.ignoreDisabledTargets=true" "-Dfile.encoding=UTF-8" "-Dani.enable.anitorrent=true" "-DCMAKE_BUILD_TYPE=Release" "-Dorg.gradle.jvmargs=-Xmx6g" "-Dkotlin.daemon.jvm.options=-Xmx4g" "--parallel" "-Pani.android.abis=arm64-v8a"'
-    - id: 'step-8'
+    - id: 'step-6'
       name: 'Check'
       uses: 'nick-fields/retry@v2'
       with:
         timeout_minutes: '60'
         max_attempts: '2'
         command: './gradlew check "--scan" "--no-configuration-cache" "-Porg.gradle.daemon.idletimeout=60000" "-Pkotlin.native.ignoreDisabledTargets=true" "-Dfile.encoding=UTF-8" "-Dani.enable.anitorrent=true" "-DCMAKE_BUILD_TYPE=Release" "-Dorg.gradle.jvmargs=-Xmx6g" "-Dkotlin.daemon.jvm.options=-Xmx4g" "--parallel" "-Pani.android.abis=arm64-v8a"'
-    - id: 'step-9'
+    - id: 'step-7'
       name: 'Build anitorrent'
       run: './gradlew buildAnitorrent copyNativeJarForCurrentPlatform "--scan" "--no-configuration-cache" "-Porg.gradle.daemon.idletimeout=60000" "-Pkotlin.native.ignoreDisabledTargets=true" "-Dfile.encoding=UTF-8" "-Dani.enable.anitorrent=true" "-DCMAKE_BUILD_TYPE=Release" "-Dorg.gradle.jvmargs=-Xmx6g" "-Dkotlin.daemon.jvm.options=-Xmx4g" "--parallel" "-Pani.android.abis=arm64-v8a"'
-    - id: 'step-10'
+    - id: 'step-8'
       name: 'Upload Anitorrent'
       uses: 'actions/upload-artifact@v4'
       with:
@@ -227,7 +190,7 @@ jobs:
         path: 'anitorrent-native/build/native-jars/anitorrent-native-*.jar'
         if-no-files-found: 'error'
         overwrite: 'true'
-    - id: 'step-11'
+    - id: 'step-9'
       name: 'Cleanup temp files'
       continue-on-error: true
       run: 'chmod +x ./ci-helper/cleanup-temp-files-macos.sh && ./ci-helper/cleanup-temp-files-macos.sh'
