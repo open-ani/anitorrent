@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.21) # Android recommends at least 3.21
 
 project(anitorrent)
 
+set(ANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 17)
 
