@@ -159,9 +159,28 @@ Anitorrent 日常使用如下工具链构建测试:
 - macOS LLVM Clang 18
 - Windows MSVC 14 (Visual Studio)
 
-GCC 与 Linux 未经测试.
+### D. GNU/Linux (GCC/Clang 工具链)
 
-macOS 支持 aarch64 和 x86_64. Windows 仅支持 x86_64.
+以下说明基于 Ubuntu 24.04.1 LTS 发行版, 其余发行版可能需要根据自己的实际情况对步骤进行一些修改.
+
+总体而言, GNU/Linux 平台下对 Anitorrent 的编译甚至可能比 macOS 下还要简单, 下面将对两种工具链的情况分别说明:
+
+#### 使用 Clang 工具链
+
+1. 执行安装脚本 [/ci-helper/install-deps-ubuntu.sh](../../ci-helper/install-deps-ubuntu.sh).
+这将会调用 apt 安装 clang, cmake, ninja-build, llvm, openssl, libssl-dev, swig. libtorrent 将在构建 anitorrent 时现场构建.
+2. 如果你的系统中没有安装任意大于 17 版本的 JDK, 可以执行以下命令安装:
+```shell
+sudo apt install openjdk-17
+```
+
+
+Ushio Project 额外测试了以下工具链:
+
+- GNU/Linux GCC 13
+- GNU/Linux Clang 18
+
+macOS 支持 aarch64 和 x86_64. Windows 和 GNU/Linux 仅支持 x86_64.
 
 ## 构建和打包
 
