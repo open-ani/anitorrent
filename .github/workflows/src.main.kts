@@ -760,7 +760,7 @@ class WithMatrix(
         if(matrix.isUbuntu) {
             run(
                 name = "Clean and download dependencies",
-                command = """JAVA_HOME=/usr/bin/jvm/temurin-21-jdk-amd64 ./gradlew """ + matrix.gradleArgs,
+                command = """JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64 ./gradlew """ + matrix.gradleArgs,
                 )
         }
         else {
@@ -780,7 +780,7 @@ class WithMatrix(
             if(matrix.isUbuntu){
                 run(
                     name = "Check",
-                    command = """JAVA_HOME=/usr/bin/jvm/temurin-21-jdk-amd64 ./gradlew check """ + matrix.gradleArgs,
+                    command = """JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64 ./gradlew check """ + matrix.gradleArgs,
                 )
             }
             else {
