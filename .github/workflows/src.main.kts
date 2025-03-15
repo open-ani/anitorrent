@@ -735,7 +735,6 @@ class WithMatrix(
         }
 
         if (matrix.isUbuntu and matrix.installNativeDeps) {
-            // MacOS
             run(
                 name = "Install Native Dependencies for Ubuntu",
                 command = shell($$"""chmod +x ./ci-helper/install-deps-ubuntu.sh && ./ci-helper/install-deps-ubuntu.sh"""),
@@ -758,26 +757,42 @@ class WithMatrix(
                 cacheDisabled = true,
             ),
         )
-        uses(
-            name = "Clean and download dependencies",
-            action = Retry_Untyped(
-                maxAttempts_Untyped = "3",
-                timeoutMinutes_Untyped = "60",
-                command_Untyped = """./gradlew """ + matrix.gradleArgs,
-            ),
-        )
+        if(matrix.isUbuntu) {
+            run(
+                name = "Clean and download dependencies",
+                command = """JAVA_HOME=/usr/bin/jvm/temurin-21-jdk-amd64 ./gradlew """ + matrix.gradleArgs,
+                )
+        }
+        else {
+            uses(
+                name = "Clean and download dependencies",
+                action = Retry_Untyped(
+                    maxAttempts_Untyped = "3",
+                    timeoutMinutes_Untyped = "60",
+                    command_Untyped = """./gradlew """ + matrix.gradleArgs,
+                ),
+            )
+        }
     }
 
     fun JobBuilder<*>.gradleCheck() {
         if (matrix.runTests) {
-            uses(
-                name = "Check",
-                action = Retry_Untyped(
-                    maxAttempts_Untyped = "2",
-                    timeoutMinutes_Untyped = "60",
-                    command_Untyped = "./gradlew check " + matrix.gradleArgs,
-                ),
-            )
+            if(matrix.isUbuntu){
+                run(
+                    name = "Check",
+                    command = """JAVA_HOME=/usr/bin/jvm/temurin-21-jdk-amd64 ./gradlew check """ + matrix.gradleArgs,
+                )
+            }
+            else {
+                uses(
+                    name = "Check",
+                    action = Retry_Untyped(
+                        maxAttempts_Untyped = "2",
+                        timeoutMinutes_Untyped = "60",
+                        command_Untyped = "./gradlew check " + matrix.gradleArgs,
+                    ),
+                )
+            }
         }
     }
 
