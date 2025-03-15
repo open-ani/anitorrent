@@ -60,10 +60,12 @@ echo ""
 sleep 2
 
 # Install OpenJDK 21
+# At the time when implementing the CI build, we detected that GitHub's Ubuntu VM
+# has a OpenJDK 17 built by Adoptium, so in this case we must remove it.
 echo ""
 echo "Uninstalling OpenJDK 17 if it exists..."
 echo ""
-sudo apt-get purge -y openjdk-17-jdk openjdk-17-jre
+sudo apt-get purge -y temurin-17-jdk temurin-17-jre
 sudo apt -y autoremove
 echo ""
 echo "Installing OpenJDK 21..."
