@@ -65,7 +65,7 @@ sleep 2
 echo ""
 echo "Uninstalling OpenJDK 17 if it exists..."
 echo ""
-sudo apt-get purge -y temurin-17-jdk temurin-17-jre
+sudo apt-get purge -y temurin-17-jdk
 sudo apt -y autoremove
 echo ""
 echo "Installing OpenJDK 21..."
