@@ -770,6 +770,13 @@ class WithMatrix(
                     timeoutMinutes_Untyped = "60",
                     command_Untyped = """./gradlew """ + matrix.gradleArgs,
                 ),
+                env =
+                    if (matrix.isUbuntu) {
+                        mapOf("JAVA_HOME" to "/usr/lib/jvm/temurin-21-jdk-amd64")
+                    }
+                    else {
+                        emptyMap()
+                    }
             )
     }
 
@@ -782,6 +789,13 @@ class WithMatrix(
                         timeoutMinutes_Untyped = "60",
                         command_Untyped = "./gradlew check " + matrix.gradleArgs,
                     ),
+                    env =
+                        if (matrix.isUbuntu) {
+                            mapOf("JAVA_HOME" to "/usr/lib/jvm/temurin-21-jdk-amd64")
+                        }
+                        else {
+                            emptyMap()
+                        }
                 )
             }
         }
