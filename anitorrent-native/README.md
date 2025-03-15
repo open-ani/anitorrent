@@ -169,9 +169,9 @@ Anitorrent 日常使用如下工具链构建测试:
 
 1. 执行安装脚本 [/ci-helper/install-deps-ubuntu.sh](../../ci-helper/install-deps-ubuntu.sh).
 这将会调用 apt 安装 clang, cmake, ninja-build, llvm, openssl, libssl-dev, swig. libtorrent 将在构建 anitorrent 时现场构建.
-2. 如果你的系统中没有安装任意大于 17 版本的 JDK, 可以执行以下命令安装:
+2. 如果你的系统中没有安装任意大于 21 版本的 JDK, 可以执行以下命令安装:
     ```shell
-    sudo apt install openjdk-17
+    sudo apt install openjdk-21-jdk
     ```
 3. 在项目根目录的 `local.properties` (没有就创建一个) 中添加一行:
    ```properties
@@ -184,9 +184,9 @@ Anitorrent 日常使用如下工具链构建测试:
 
 1. 将安装脚本 [/ci-helper/install-deps-ubuntu.sh](../../ci-helper/install-deps-ubuntu.sh) 中的 `clang` 替换为 `build-essential`, 然后执行.
    这将会调用 apt 安装 gcc, cmake, ninja-build, llvm, openssl, libssl-dev, swig. libtorrent 将在构建 anitorrent 时现场构建.
-2. 如果你的系统中没有安装任意大于 17 版本的 JDK, 可以执行以下命令安装:
+2. 如果你的系统中没有安装任意大于 21 版本的 JDK, 可以执行以下命令安装:
     ```shell
-    sudo apt install openjdk-17-jdk
+    sudo apt install openjdk-21-jdk
     ```
    如果有，则跳过.
 3. 在项目根目录的 `local.properties` (没有就创建一个) 中添加一行:
@@ -209,7 +209,7 @@ macOS 支持 aarch64 和 x86_64. Windows 和 GNU/Linux 仅支持 x86_64.
 
 - `generateSwig`: 生成 SWIG JNI 接口
 - `configureAnitorrent`: 生成 CMake 构建配置
-- `buildAnitorrent`: 构建 `libanitorrent.dylib` / `anitorrent.dll`
+- `buildAnitorrent`: 构建 `libanitorrent.dylib` / `anitorrent.dll` / `libanitorrent.so`
 
 配置好之后, 在运行 desktop main 时将会自动构建 Anitorrent 并复制到 `appResources` 目录, 详见
 task `:app:desktop:copyAnitorrentDylibToResources`. 打包 (如 `:app:desktop:package`) 时也会自动携带.
