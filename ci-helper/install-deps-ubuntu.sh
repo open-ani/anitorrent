@@ -61,6 +61,11 @@ sleep 2
 
 # Install OpenJDK 21
 echo ""
+echo "Uninstalling OpenJDK 17 if it exists..."
+echo ""
+sudo apt-get purge -y openjdk-17-jdk openjdk-17-jre
+sudo apt -y autoremove
+echo ""
 echo "Installing OpenJDK 21..."
 echo ""
 sleep 1
