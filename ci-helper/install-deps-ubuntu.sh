@@ -72,6 +72,7 @@ echo "Installing OpenJDK 21..."
 echo ""
 sleep 1
 sudo apt-get install -y openjdk-21-jdk
+export JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64
 java --version
 echo ""
 echo "OpenJDK 21 install completed."
