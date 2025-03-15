@@ -182,7 +182,7 @@ Anitorrent 日常使用如下工具链构建测试:
 
 #### 使用 GCC 工具链
 
-1. 将安装脚本 [/ci-helper/install-deps-ubuntu.sh](../../ci-helper/install-deps-ubuntu.sh)中的 `clang` 替换为 `build-essential`, 然后执行.
+1. 将安装脚本 [/ci-helper/install-deps-ubuntu.sh](../../ci-helper/install-deps-ubuntu.sh) 中的 `clang` 替换为 `build-essential`, 然后执行.
    这将会调用 apt 安装 gcc, cmake, ninja-build, llvm, openssl, libssl-dev, swig. libtorrent 将在构建 anitorrent 时现场构建.
 2. 如果你的系统中没有安装任意大于 17 版本的 JDK, 可以执行以下命令安装:
     ```shell
@@ -196,7 +196,7 @@ Anitorrent 日常使用如下工具链构建测试:
 4. 完成. 现在可以运行 `./gradlew :app:desktop:runDistributable` 测试, 或者在 IDE 右上角选择 "Run
    Desktop" 配置.
 
-Ushio Project 额外测试了以下工具链:
+Ushio Project by Kasumi's IT 额外测试了以下工具链:
 
 - GNU/Linux GCC 13
 - GNU/Linux Clang 18
@@ -220,3 +220,4 @@ task `:app:desktop:copyAnitorrentDylibToResources`. 打包 (如 `:app:desktop:pa
 
 - macOS: `build-ci/libanitorrent.dylib`
 - Windows: `build-ci/anitorrent.dll`
+- GNU/Linux: `build-ci\libanitorrent.so`

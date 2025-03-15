@@ -13,9 +13,8 @@ High-level APIs are located in the Animeko repository, and we will stabilize the
 
 Supported targets:
 
-- Desktop JVM: Windows x86_64, macOS x86_64, macOS AArch64.
+- Desktop JVM: Windows x86_64, macOS x86_64, macOS AArch64, GNU/Linux x86_64.
 - Android: armeabi-v7a, arm64-v8a, x86, x86_64.
-- Linux is planned.
 - iOS is planned.
 
 ## Installation
