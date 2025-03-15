@@ -220,4 +220,4 @@ task `:app:desktop:copyAnitorrentDylibToResources`. 打包 (如 `:app:desktop:pa
 
 - macOS: `build-ci/libanitorrent.dylib`
 - Windows: `build-ci/anitorrent.dll`
-- GNU/Linux: `build-ci\libanitorrent.so`
+- GNU/Linux: `build-ci/libanitorrent.so`
