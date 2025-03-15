@@ -116,6 +116,8 @@ jobs:
         command: './gradlew check "--scan" "--no-configuration-cache" "-Porg.gradle.daemon.idletimeout=60000" "-Pkotlin.native.ignoreDisabledTargets=true" "-Dfile.encoding=UTF-8" "-Dani.enable.anitorrent=true" "-DCMAKE_BUILD_TYPE=Release" "-Dorg.gradle.jvmargs=-Xmx4g" "-Dkotlin.daemon.jvm.options=-Xmx4g"'
     - id: 'step-8'
       name: 'Build anitorrent'
+      env:
+        JAVA_HOME: '/usr/lib/jvm/temurin-21-jdk-amd64'
       run: './gradlew buildAnitorrent copyNativeJarForCurrentPlatform "--scan" "--no-configuration-cache" "-Porg.gradle.daemon.idletimeout=60000" "-Pkotlin.native.ignoreDisabledTargets=true" "-Dfile.encoding=UTF-8" "-Dani.enable.anitorrent=true" "-DCMAKE_BUILD_TYPE=Release" "-Dorg.gradle.jvmargs=-Xmx4g" "-Dkotlin.daemon.jvm.options=-Xmx4g"'
     - id: 'step-9'
       name: 'Upload Anitorrent'

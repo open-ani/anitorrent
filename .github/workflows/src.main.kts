@@ -669,7 +669,13 @@ class WithMatrix(
                 append(matrix.gradleArgs)
             },
         ),
-        env = env,
+        env = 
+            if (matrix.isUbuntu) {
+            env + mapOf("JAVA_HOME" to "/usr/lib/jvm/temurin-21-jdk-amd64")
+        }
+            else {
+            env
+        }
     )
 
     /**
