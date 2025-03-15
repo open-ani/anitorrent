@@ -689,7 +689,7 @@ class WithMatrix(
         if (matrix.isUbuntu) {
             run(
                 name = "Skip Setup OpenJDK on Ubuntu",
-                command = shell($$"""echo "Skiping setup OpenJDK on Ubuntu as this process has been merged into native dependencies setup."""),
+                command = shell($$"""echo "Skiping setup OpenJDK on Ubuntu as this process has been merged into native dependencies setup.""""),
             )
         }
         else {

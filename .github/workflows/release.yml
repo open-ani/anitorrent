@@ -223,7 +223,7 @@ jobs:
         default_return_value: '${{ steps.step-1.outputs.tag }}'
     - id: 'step-3'
       name: 'Skip Setup OpenJDK on Ubuntu'
-      run: 'echo "Skiping setup OpenJDK on Ubuntu as this process has been merged into native dependencies setup.'
+      run: 'echo "Skiping setup OpenJDK on Ubuntu as this process has been merged into native dependencies setup."'
     - id: 'step-4'
       run: 'echo "jvm.toolchain.version=21" >> local.properties'
     - id: 'step-5'
