@@ -59,23 +59,5 @@ echo "Swig install completed."
 echo ""
 sleep 2
 
-# Install OpenJDK 21
-# At the time when implementing the CI build, we detected that GitHub's Ubuntu VM
-# has a OpenJDK 17 built by Adoptium, so in this case we must remove it.
-echo ""
-echo "Uninstalling OpenJDK 17 if it exists..."
-echo ""
-sudo apt-get purge -y temurin-17-jdk
-sudo apt -y autoremove
-echo ""
-echo "Installing OpenJDK 21..."
-echo ""
-sleep 1
-sudo apt-get install -y openjdk-21-jdk
-java --version
-echo ""
-echo "OpenJDK 21 install completed."
-echo ""
-sleep 2
 # Finally, we're done
 echo "Dependencies setup completed."

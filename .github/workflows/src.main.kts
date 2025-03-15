@@ -689,7 +689,7 @@ class WithMatrix(
         if (matrix.isUbuntu) {
             run(
                 name = "Skip Setup OpenJDK on Ubuntu",
-                command = shell($$"""echo "Skiping setup OpenJDK on Ubuntu as this process has been merged into native dependencies setup.""""),
+                command = shell($$"""echo "Skiping setup OpenJDK on Ubuntu as Ubuntu has already have a Temurin-21-JDK.""""),
             )
         }
         else {
@@ -757,13 +757,6 @@ class WithMatrix(
                 cacheDisabled = true,
             ),
         )
-        if(matrix.isUbuntu) {
-            run(
-                name = "Clean and download dependencies",
-                command = """JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64 ./gradlew """ + matrix.gradleArgs,
-                )
-        }
-        else {
             uses(
                 name = "Clean and download dependencies",
                 action = Retry_Untyped(
@@ -772,18 +765,10 @@ class WithMatrix(
                     command_Untyped = """./gradlew """ + matrix.gradleArgs,
                 ),
             )
-        }
     }
 
     fun JobBuilder<*>.gradleCheck() {
         if (matrix.runTests) {
-            if(matrix.isUbuntu){
-                run(
-                    name = "Check",
-                    command = """JAVA_HOME=/usr/lib/jvm/temurin-21-jdk-amd64 ./gradlew check """ + matrix.gradleArgs,
-                )
-            }
-            else {
                 uses(
                     name = "Check",
                     action = Retry_Untyped(
@@ -794,8 +779,7 @@ class WithMatrix(
                 )
             }
         }
-    }
-
+    
     fun JobBuilder<*>.uploadAnitorrent(): ActionStep<UploadArtifact.Outputs> {
         return uses(
             name = "Upload Anitorrent",
