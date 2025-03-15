@@ -15,8 +15,8 @@ echo ""
 echo "Checking and updating this system..."
 echo ""
 sleep 1
-sudo apt update
-sudo apt -y full-upgrade
+sudo apt-get update
+sudo apt-get -y full-upgrade
 echo ""
 echo "Update completed."
 echo ""
@@ -27,10 +27,10 @@ echo ""
 echo "Installing CMake and Clang Compiler..."
 echo ""
 sleep 1
-sudo apt install -y clang
-sudo apt install -y cmake
-sudo apt install -y ninja-build
-sudo apt install -y llvm
+sudo apt-get install -y clang
+sudo apt-get install -y cmake
+sudo apt-get install -y ninja-build
+sudo apt-get install -y llvm
 echo ""
 echo "Compiler install completed."
 echo ""
@@ -41,8 +41,8 @@ echo ""
 echo "Installing OpenSSL which Anitorrent depends on..."
 echo ""
 sleep 1
-sudo apt install -y openssl
-sudo apt install -y libssl-dev
+sudo apt-get install -y openssl
+sudo apt-get install -y libssl-dev
 echo ""
 echo "OpenSSL install completed."
 echo ""
@@ -53,7 +53,7 @@ echo ""
 echo "Installing swig..."
 echo ""
 sleep 1
-sudo apt install -y swig
+sudo apt-get install -y swig
 echo ""
 echo "Swig install completed."
 echo ""
@@ -64,7 +64,8 @@ echo ""
 echo "Installing OpenJDK 21..."
 echo ""
 sleep 1
-sudo apt install -y openjdk-21-jdk
+sudo apt-get install -y openjdk-21-jdk
+java --version
 echo ""
 echo "OpenJDK 21 install completed."
 echo ""
