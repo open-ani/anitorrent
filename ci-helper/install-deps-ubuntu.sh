@@ -1,22 +1,73 @@
 #!/bin/bash
 #
 # Copyright (C) 2024 OpenAni and Contributors
-# Copyright (C) 2025 RinLin_NYA/AsahinaHotaru
+# Copyright (C) 2025 Ushio Project by Kasumi's IT
 #
 # This script is free software: 
 # You can use, modify, distribute and redistribute this script under the term below:
-# Use of this source code is governed by the Apache-2.0 license, which can be found at the following link.
+# Use of this source code is governed by the GPL-3.0 license, which can be found at the following link.
 #
-# https://github.com/open-ani/mediamp/blob/main/LICENSE
+# https://github.com/open-ani/anitorrent/blob/main/LICENSE
 #
 
+# First, we should keep the environment is always updated
+echo ""
+echo "Checking and updating this system..."
+echo ""
+sleep 1
+sudo apt update
+sudo apt -y full-upgrade
+echo ""
+echo "Update completed."
+echo ""
+sleep 2
+
 # Install CMake and Clang Compiler
+echo ""
+echo "Installing CMake and Clang Compiler..."
+echo ""
+sleep 1
 sudo apt install -y clang
 sudo apt install -y cmake
 sudo apt install -y ninja-build
 sudo apt install -y llvm
+echo ""
+echo "Compiler install completed."
+echo ""
+sleep 2
 
 # Install OpenSSL
+echo ""
+echo "Installing OpenSSL which Anitorrent depends on..."
+echo ""
+sleep 1
 sudo apt install -y openssl
 sudo apt install -y libssl-dev
+echo ""
+echo "OpenSSL install completed."
+echo ""
+sleep 2
+
+# Install swig
+echo ""
+echo "Installing swig..."
+echo ""
+sleep 1
 sudo apt install -y swig
+echo ""
+echo "Swig install completed."
+echo ""
+sleep 2
+
+# Install OpenJDK 21
+echo ""
+echo "Installing OpenJDK 21..."
+echo ""
+sleep 1
+sudo apt install -y openjdk-21-jdk
+echo ""
+echo "OpenJDK 21 install completed."
+echo ""
+sleep 2
+# Finally, we're done
+echo "Dependencies setup completed."

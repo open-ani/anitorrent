@@ -170,10 +170,31 @@ Anitorrent 日常使用如下工具链构建测试:
 1. 执行安装脚本 [/ci-helper/install-deps-ubuntu.sh](../../ci-helper/install-deps-ubuntu.sh).
 这将会调用 apt 安装 clang, cmake, ninja-build, llvm, openssl, libssl-dev, swig. libtorrent 将在构建 anitorrent 时现场构建.
 2. 如果你的系统中没有安装任意大于 17 版本的 JDK, 可以执行以下命令安装:
-```shell
-sudo apt install openjdk-17
-```
+    ```shell
+    sudo apt install openjdk-17
+    ```
+3. 在项目根目录的 `local.properties` (没有就创建一个) 中添加一行:
+   ```properties
+   ani.enable.anitorrent=true
+   ```
+4. 完成. 现在可以运行 `./gradlew :app:desktop:runDistributable` 测试, 或者在 IDE 右上角选择 "Run
+   Desktop" 配置.
 
+#### 使用 GCC 工具链
+
+1. 将安装脚本 [/ci-helper/install-deps-ubuntu.sh](../../ci-helper/install-deps-ubuntu.sh)中的 `clang` 替换为 `build-essential`, 然后执行.
+   这将会调用 apt 安装 gcc, cmake, ninja-build, llvm, openssl, libssl-dev, swig. libtorrent 将在构建 anitorrent 时现场构建.
+2. 如果你的系统中没有安装任意大于 17 版本的 JDK, 可以执行以下命令安装:
+    ```shell
+    sudo apt install openjdk-17-jdk
+    ```
+   如果有，则跳过.
+3. 在项目根目录的 `local.properties` (没有就创建一个) 中添加一行:
+   ```properties
+   ani.enable.anitorrent=true
+   ```
+4. 完成. 现在可以运行 `./gradlew :app:desktop:runDistributable` 测试, 或者在 IDE 右上角选择 "Run
+   Desktop" 配置.
 
 Ushio Project 额外测试了以下工具链:
 
