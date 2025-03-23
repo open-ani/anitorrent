@@ -15,6 +15,11 @@
 #include "boost/stacktrace/stacktrace.hpp"
 #endif
 
+// If compiling in GNU/Linux platform, include the csignal
+#if (defined(__linux__) && !defined(__ANDROID__))
+#include <csignal>
+#endif
+
 #include "libtorrent/version.hpp"
 
 

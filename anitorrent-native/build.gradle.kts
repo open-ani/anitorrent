@@ -363,7 +363,10 @@ val copyNativeFiles by tasks.registering {
                         add(anitorrentBuildDir.resolve("libanitorrent.dylib"))
                     }
 
-                    Os.Unknown, Os.Linux -> {
+                    Os.Linux -> {
+                        add(anitorrentBuildDir.resolve("libanitorrent.so"))
+                    }
+                    Os.Unknown -> {
                         add(anitorrentBuildDir.resolve("libanitorrent.so"))
                         add(anitorrentBuildDir.resolve("_deps/libtorrent-build/libtorrent-rasterbar.2.0.10.so"))
                     }
@@ -386,7 +389,7 @@ val copyNativeFiles by tasks.registering {
         }
 
         val dependencies = buildMap {
-            if (os != Os.MacOS) { // macos uses static linking
+            if (os != Os.MacOS && os != Os.Linux) { // macos and linux uses static linking
                 map["OPENSSL_CRYPTO_LIBRARY:FILEPATH"]?.let {
                     put("OPENSSL_CRYPTO_LIBRARY", File(it))
                 }
@@ -447,7 +450,7 @@ tasks.withType(KotlinJvmCompile::class) {
     mustRunAfter(generateSwigImpl)
 }
 
-val supportedOsTriples = listOf("macos-aarch64", "macos-x64", "windows-x64")
+val supportedOsTriples = listOf("macos-aarch64", "macos-x64", "windows-x64", "linux-x64")
 
 val nativeJarsDir = layout.buildDirectory.dir("native-jars")
 val nativeJarForCurrentPlatform = tasks.register("nativeJarForCurrentPlatform", Jar::class.java) {

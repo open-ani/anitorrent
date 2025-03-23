@@ -296,6 +296,13 @@ sealed class Runner(
         arch = Arch.X64,
         labels = setOf("ubuntu-20.04"),
     )
+    object GithubUbuntu2404 : GithubHosted(
+        id = "github-ubuntu-2404",
+        displayName = "Ubuntu 24.04 x86_64 (GitHub)",
+        os = OS.UBUNTU,
+        arch = Arch.X64,
+        labels = setOf("ubuntu-24.04"),
+    )
 
     // Objects under SelfHosted
     object SelfHostedWindows10 : SelfHosted(
@@ -350,20 +357,19 @@ val buildMatrixInstances = listOf(
         ),
         buildAllAndroidAbis = false,
     ),
-//    MatrixInstance(
-//        runner = Runner.GithubUbuntu2004,
-//        name = "Ubuntu x86_64 (Compile only)",
-//        uploadApk = false,
-//        buildAnitorrent = false,
-//        buildAnitorrentSeparately = false,
-//        composeResourceTriple = "linux-x64",
-//        runTests = false,
-//        uploadDesktopInstallers = false,
-//        extraGradleArgs = listOf(),
-//        gradleHeap = "4g",
-//        kotlinCompilerHeap = "4g",
-//        buildAllAndroidAbis = true,
-//    ),
+    MatrixInstance(
+        runner = Runner.GithubUbuntu2404,
+        name = "Ubuntu 24.04 LTS x86_64",
+        uploadApk = false,
+        buildAnitorrent = true,
+        buildAnitorrentSeparately = true,
+        composeResourceTriple = "linux-x64",
+        uploadDesktopInstallers = true,
+        extraGradleArgs = listOf(),
+        gradleHeap = "4g",
+        kotlinCompilerHeap = "4g",
+        buildAllAndroidAbis = true,
+    ),
     MatrixInstance(
         runner = Runner.GithubMacOS13,
         uploadApk = true, // all ABIs
@@ -582,12 +588,13 @@ workflow(
 
     val win = addJob(buildMatrixInstances[Runner.GithubWindowsServer2019])
     val macAarch64 = addJob(buildMatrixInstances[Runner.SelfHostedMacOS15])
-
-    addJob(buildMatrixInstances[Runner.GithubMacOS13], needs = listOf(win, macAarch64)) { matrix ->
+    val ubuntu = addJob(buildMatrixInstances[Runner.GithubUbuntu2404])
+    addJob(buildMatrixInstances[Runner.GithubMacOS13], needs = listOf(win, macAarch64, ubuntu)) { matrix ->
         with(WithMatrix(matrix)) {
             listOf(
                 OS.WINDOWS to Arch.X64,
                 OS.MACOS to Arch.AARCH64,
+                OS.UBUNTU to Arch.X64,
             ).forEach { (os, arch) ->
                 uses(
                     action = DownloadArtifact(
@@ -662,7 +669,6 @@ class WithMatrix(
                 append(matrix.gradleArgs)
             },
         ),
-        env = env,
     )
 
     /**
@@ -680,14 +686,13 @@ class WithMatrix(
 
     fun JobBuilder<*>.installJdk() {
         uses(
-            name = "Setup JDK 21 for other OS",
-            action = SetupJava(
-                distribution = SetupJava.Distribution.Temurin,
-                javaVersion = "21",
-            ),
-            env = mapOf("GITHUB_TOKEN" to expr { secrets.GITHUB_TOKEN }),
+                name = "Setup JDK 21",
+                action = SetupJava(
+                    distribution = SetupJava.Distribution.Temurin,
+                    javaVersion = "21",
+                ),
+                env = mapOf("GITHUB_TOKEN" to expr { secrets.GITHUB_TOKEN }),
         )
-
         run(
             command = shell($$"""echo "jvm.toolchain.version=21" >> local.properties"""),
         )
@@ -719,6 +724,13 @@ class WithMatrix(
                 command = shell($$"""chmod +x ./ci-helper/install-deps-macos-ci.sh && ./ci-helper/install-deps-macos-ci.sh"""),
             )
         }
+
+        if (matrix.isUbuntu and matrix.installNativeDeps) {
+            run(
+                name = "Install Native Dependencies for Ubuntu",
+                command = shell($$"""chmod +x ./ci-helper/install-deps-ubuntu.sh && ./ci-helper/install-deps-ubuntu.sh"""),
+            )
+        }
     }
 
     fun JobBuilder<*>.chmod777() {
@@ -736,29 +748,29 @@ class WithMatrix(
                 cacheDisabled = true,
             ),
         )
-        uses(
-            name = "Clean and download dependencies",
-            action = Retry_Untyped(
-                maxAttempts_Untyped = "3",
-                timeoutMinutes_Untyped = "60",
-                command_Untyped = """./gradlew """ + matrix.gradleArgs,
-            ),
-        )
+            uses(
+                name = "Clean and download dependencies",
+                action = Retry_Untyped(
+                    maxAttempts_Untyped = "3",
+                    timeoutMinutes_Untyped = "60",
+                    command_Untyped = """./gradlew """ + matrix.gradleArgs,
+                ),
+            )
     }
 
     fun JobBuilder<*>.gradleCheck() {
         if (matrix.runTests) {
-            uses(
-                name = "Check",
-                action = Retry_Untyped(
-                    maxAttempts_Untyped = "2",
-                    timeoutMinutes_Untyped = "60",
-                    command_Untyped = "./gradlew check " + matrix.gradleArgs,
-                ),
-            )
+                uses(
+                    name = "Check",
+                    action = Retry_Untyped(
+                        maxAttempts_Untyped = "2",
+                        timeoutMinutes_Untyped = "60",
+                        command_Untyped = "./gradlew check " + matrix.gradleArgs,
+                    ),
+                )
+            }
         }
-    }
-
+    
     fun JobBuilder<*>.uploadAnitorrent(): ActionStep<UploadArtifact.Outputs> {
         return uses(
             name = "Upload Anitorrent",

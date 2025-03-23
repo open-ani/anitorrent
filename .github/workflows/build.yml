@@ -23,7 +23,7 @@ jobs:
       with:
         submodules: 'recursive'
     - id: 'step-1'
-      name: 'Setup JDK 21 for other OS'
+      name: 'Setup JDK 21'
       uses: 'actions/setup-java@v4'
       with:
         java-version: '21'
@@ -74,6 +74,62 @@ jobs:
         path: 'anitorrent-native/build/native-jars/anitorrent-native-*.jar'
         if-no-files-found: 'error'
         overwrite: 'true'
+  build_github-ubuntu-2404:
+    name: 'Build (Ubuntu 24.04 LTS x86_64)'
+    runs-on:
+    - 'ubuntu-24.04'
+    permissions:
+      actions: 'write'
+    steps:
+    - id: 'step-0'
+      uses: 'actions/checkout@v4'
+      with:
+        submodules: 'recursive'
+    - id: 'step-1'
+      name: 'Setup JDK 21'
+      uses: 'actions/setup-java@v4'
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+    - id: 'step-2'
+      run: 'echo "jvm.toolchain.version=21" >> local.properties'
+    - id: 'step-3'
+      name: 'Install Native Dependencies for Ubuntu'
+      run: 'chmod +x ./ci-helper/install-deps-ubuntu.sh && ./ci-helper/install-deps-ubuntu.sh'
+    - id: 'step-4'
+      run: 'chmod -R 777 .'
+    - id: 'step-5'
+      name: 'Setup Gradle'
+      uses: 'gradle/actions/setup-gradle@v3'
+      with:
+        cache-disabled: 'true'
+    - id: 'step-6'
+      name: 'Clean and download dependencies'
+      uses: 'nick-fields/retry@v2'
+      with:
+        timeout_minutes: '60'
+        max_attempts: '3'
+        command: './gradlew "--scan" "--no-configuration-cache" "-Porg.gradle.daemon.idletimeout=60000" "-Pkotlin.native.ignoreDisabledTargets=true" "-Dfile.encoding=UTF-8" "-Dani.enable.anitorrent=true" "-DCMAKE_BUILD_TYPE=Release" "-Dorg.gradle.jvmargs=-Xmx4g" "-Dkotlin.daemon.jvm.options=-Xmx4g"'
+    - id: 'step-7'
+      name: 'Check'
+      uses: 'nick-fields/retry@v2'
+      with:
+        timeout_minutes: '60'
+        max_attempts: '2'
+        command: './gradlew check "--scan" "--no-configuration-cache" "-Porg.gradle.daemon.idletimeout=60000" "-Pkotlin.native.ignoreDisabledTargets=true" "-Dfile.encoding=UTF-8" "-Dani.enable.anitorrent=true" "-DCMAKE_BUILD_TYPE=Release" "-Dorg.gradle.jvmargs=-Xmx4g" "-Dkotlin.daemon.jvm.options=-Xmx4g"'
+    - id: 'step-8'
+      name: 'Build anitorrent'
+      run: './gradlew buildAnitorrent copyNativeJarForCurrentPlatform "--scan" "--no-configuration-cache" "-Porg.gradle.daemon.idletimeout=60000" "-Pkotlin.native.ignoreDisabledTargets=true" "-Dfile.encoding=UTF-8" "-Dani.enable.anitorrent=true" "-DCMAKE_BUILD_TYPE=Release" "-Dorg.gradle.jvmargs=-Xmx4g" "-Dkotlin.daemon.jvm.options=-Xmx4g"'
+    - id: 'step-9'
+      name: 'Upload Anitorrent'
+      uses: 'actions/upload-artifact@v4'
+      with:
+        name: 'anitorrent-ubuntu-x64'
+        path: 'anitorrent-native/build/native-jars/anitorrent-native-*.jar'
+        if-no-files-found: 'error'
+        overwrite: 'true'
   build_github-macos-13:
     name: 'Build (macOS 13 x86_64 (GitHub))'
     runs-on:
@@ -90,7 +146,7 @@ jobs:
       continue-on-error: true
       run: 'chmod +x ./ci-helper/free-space-macos.sh && ./ci-helper/free-space-macos.sh'
     - id: 'step-2'
-      name: 'Setup JDK 21 for other OS'
+      name: 'Setup JDK 21'
       uses: 'actions/setup-java@v4'
       with:
         java-version: '21'
@@ -149,7 +205,7 @@ jobs:
       with:
         submodules: 'recursive'
     - id: 'step-1'
-      name: 'Setup JDK 21 for other OS'
+      name: 'Setup JDK 21'
       uses: 'actions/setup-java@v4'
       with:
         java-version: '21'

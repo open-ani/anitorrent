@@ -50,6 +50,14 @@ else ()
         add_compile_options(/Zc:__cplusplus)
         set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     endif ()
+	# 尝试引入 GNU/Linux 发行版下的编译
+    if (UNIX AND NOT APPLE AND NOT WIN32)
+        # 添加 Linux 平台下的额外配置
+		add_compile_options(-Wall -Wextra -std=c++17 -g -O2 -pthread -fPIC -fno-exceptions -frtti)
+		set(BUILD_SHARED_LIBS OFF) # 编译 libtorrent 为静态库
+		set(OPENSSL_USE_STATIC_LIBS TRUE) # 静态链接 OpenSSL
+        find_package(OpenSSL REQUIRED)
+    endif ()
 endif ()
 
 if (NOT DEFINED Boost_INCLUDE_DIR)
@@ -148,7 +156,7 @@ add_library(anitorrent
         cpp/include/peer_filter.hpp
         cpp/src/peer_filter.cpp
 )
-target_include_directories(anitorrent PRIVATE cpp/include)
+target_include_directories(anitorrent PRIVATE cpp/include include)
 
 # Link libraries
 if (ANDROID)
@@ -166,8 +174,9 @@ else ()
     endforeach()
 
     target_link_libraries(anitorrent PRIVATE torrent-rasterbar ${FILTERED_JNI_LIBRARIES})
-    
-    if (APPLE)
+
+    if (UNIX)
     	target_link_libraries(anitorrent PRIVATE OpenSSL::SSL OpenSSL::Crypto) # Statically link OpenSSL
     endif ()
+
 endif ()

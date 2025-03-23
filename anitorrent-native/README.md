@@ -159,9 +159,49 @@ Anitorrent 日常使用如下工具链构建测试:
 - macOS LLVM Clang 18
 - Windows MSVC 14 (Visual Studio)
 
-GCC 与 Linux 未经测试.
+### D. GNU/Linux (GCC/Clang 工具链)
 
-macOS 支持 aarch64 和 x86_64. Windows 仅支持 x86_64.
+以下说明基于 Ubuntu 24.04.1 LTS 发行版, 其余发行版可能需要根据自己的实际情况对步骤进行一些修改.
+
+总体而言, GNU/Linux 平台下对 Anitorrent 的编译甚至可能比 macOS 下还要简单, 下面将对两种工具链的情况分别说明:
+
+#### 使用 Clang 工具链
+
+1. 执行安装脚本 [/ci-helper/install-deps-ubuntu.sh](../../ci-helper/install-deps-ubuntu.sh).
+这将会调用 apt 安装 clang, cmake, ninja-build, llvm, openssl, libssl-dev, swig. libtorrent 将在构建 anitorrent 时现场构建.
+2. 如果你的系统中没有安装任意大于 21 版本的 JDK, 可以执行以下命令安装:
+    ```shell
+    sudo apt install openjdk-21-jdk
+    ```
+3. 在项目根目录的 `local.properties` (没有就创建一个) 中添加一行:
+   ```properties
+   ani.enable.anitorrent=true
+   ```
+4. 完成. 现在可以运行 `./gradlew :app:desktop:runDistributable` 测试, 或者在 IDE 右上角选择 "Run
+   Desktop" 配置.
+
+#### 使用 GCC 工具链
+
+1. 将安装脚本 [/ci-helper/install-deps-ubuntu.sh](../../ci-helper/install-deps-ubuntu.sh) 中的 `clang` 替换为 `build-essential`, 然后执行.
+   这将会调用 apt 安装 gcc, cmake, ninja-build, llvm, openssl, libssl-dev, swig. libtorrent 将在构建 anitorrent 时现场构建.
+2. 如果你的系统中没有安装任意大于 21 版本的 JDK, 可以执行以下命令安装:
+    ```shell
+    sudo apt install openjdk-21-jdk
+    ```
+   如果有，则跳过.
+3. 在项目根目录的 `local.properties` (没有就创建一个) 中添加一行:
+   ```properties
+   ani.enable.anitorrent=true
+   ```
+4. 完成. 现在可以运行 `./gradlew :app:desktop:runDistributable` 测试, 或者在 IDE 右上角选择 "Run
+   Desktop" 配置.
+
+Ushio Project by Kasumi's IT 额外测试了以下工具链:
+
+- GNU/Linux GCC 13
+- GNU/Linux Clang 18
+
+macOS 支持 aarch64 和 x86_64. Windows 和 GNU/Linux 仅支持 x86_64.
 
 ## 构建和打包
 
@@ -169,7 +209,7 @@ macOS 支持 aarch64 和 x86_64. Windows 仅支持 x86_64.
 
 - `generateSwig`: 生成 SWIG JNI 接口
 - `configureAnitorrent`: 生成 CMake 构建配置
-- `buildAnitorrent`: 构建 `libanitorrent.dylib` / `anitorrent.dll`
+- `buildAnitorrent`: 构建 `libanitorrent.dylib` / `anitorrent.dll` / `libanitorrent.so`
 
 配置好之后, 在运行 desktop main 时将会自动构建 Anitorrent 并复制到 `appResources` 目录, 详见
 task `:app:desktop:copyAnitorrentDylibToResources`. 打包 (如 `:app:desktop:package`) 时也会自动携带.
@@ -180,3 +220,4 @@ task `:app:desktop:copyAnitorrentDylibToResources`. 打包 (如 `:app:desktop:pa
 
 - macOS: `build-ci/libanitorrent.dylib`
 - Windows: `build-ci/anitorrent.dll`
+- GNU/Linux: `build-ci/libanitorrent.so`
