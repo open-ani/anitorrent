@@ -23,7 +23,7 @@ jobs:
       with:
         submodules: 'recursive'
     - id: 'step-1'
-      name: 'Setup JDK 21 for other OS'
+      name: 'Setup JDK 21'
       uses: 'actions/setup-java@v4'
       with:
         java-version: '21'
@@ -86,8 +86,13 @@ jobs:
       with:
         submodules: 'recursive'
     - id: 'step-1'
-      name: 'Skip Setup OpenJDK on Ubuntu'
-      run: 'echo "Skiping setup OpenJDK on Ubuntu as Ubuntu has already have a Temurin-21-JDK."'
+      name: 'Setup JDK 21'
+      uses: 'actions/setup-java@v4'
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
     - id: 'step-2'
       run: 'echo "jvm.toolchain.version=21" >> local.properties'
     - id: 'step-3'
@@ -107,8 +112,6 @@ jobs:
         timeout_minutes: '60'
         max_attempts: '3'
         command: './gradlew "--scan" "--no-configuration-cache" "-Porg.gradle.daemon.idletimeout=60000" "-Pkotlin.native.ignoreDisabledTargets=true" "-Dfile.encoding=UTF-8" "-Dani.enable.anitorrent=true" "-DCMAKE_BUILD_TYPE=Release" "-Dorg.gradle.jvmargs=-Xmx4g" "-Dkotlin.daemon.jvm.options=-Xmx4g"'
-      env:
-        JAVA_HOME: '/usr/lib/jvm/temurin-21-jdk-amd64'
     - id: 'step-7'
       name: 'Check'
       uses: 'nick-fields/retry@v2'
@@ -116,12 +119,8 @@ jobs:
         timeout_minutes: '60'
         max_attempts: '2'
         command: './gradlew check "--scan" "--no-configuration-cache" "-Porg.gradle.daemon.idletimeout=60000" "-Pkotlin.native.ignoreDisabledTargets=true" "-Dfile.encoding=UTF-8" "-Dani.enable.anitorrent=true" "-DCMAKE_BUILD_TYPE=Release" "-Dorg.gradle.jvmargs=-Xmx4g" "-Dkotlin.daemon.jvm.options=-Xmx4g"'
-      env:
-        JAVA_HOME: '/usr/lib/jvm/temurin-21-jdk-amd64'
     - id: 'step-8'
       name: 'Build anitorrent'
-      env:
-        JAVA_HOME: '/usr/lib/jvm/temurin-21-jdk-amd64'
       run: './gradlew buildAnitorrent copyNativeJarForCurrentPlatform "--scan" "--no-configuration-cache" "-Porg.gradle.daemon.idletimeout=60000" "-Pkotlin.native.ignoreDisabledTargets=true" "-Dfile.encoding=UTF-8" "-Dani.enable.anitorrent=true" "-DCMAKE_BUILD_TYPE=Release" "-Dorg.gradle.jvmargs=-Xmx4g" "-Dkotlin.daemon.jvm.options=-Xmx4g"'
     - id: 'step-9'
       name: 'Upload Anitorrent'
@@ -147,7 +146,7 @@ jobs:
       continue-on-error: true
       run: 'chmod +x ./ci-helper/free-space-macos.sh && ./ci-helper/free-space-macos.sh'
     - id: 'step-2'
-      name: 'Setup JDK 21 for other OS'
+      name: 'Setup JDK 21'
       uses: 'actions/setup-java@v4'
       with:
         java-version: '21'
@@ -206,7 +205,7 @@ jobs:
       with:
         submodules: 'recursive'
     - id: 'step-1'
-      name: 'Setup JDK 21 for other OS'
+      name: 'Setup JDK 21'
       uses: 'actions/setup-java@v4'
       with:
         java-version: '21'

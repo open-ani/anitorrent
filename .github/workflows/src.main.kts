@@ -669,13 +669,6 @@ class WithMatrix(
                 append(matrix.gradleArgs)
             },
         ),
-        env = 
-            if (matrix.isUbuntu) {
-            env + mapOf("JAVA_HOME" to "/usr/lib/jvm/temurin-21-jdk-amd64")
-        }
-            else {
-            env
-        }
     )
 
     /**
@@ -692,22 +685,14 @@ class WithMatrix(
     }
 
     fun JobBuilder<*>.installJdk() {
-        if (matrix.isUbuntu) {
-            run(
-                name = "Skip Setup OpenJDK on Ubuntu",
-                command = shell($$"""echo "Skiping setup OpenJDK on Ubuntu as Ubuntu has already have a Temurin-21-JDK.""""),
-            )
-        }
-        else {
-            uses(
-                name = "Setup JDK 21 for other OS",
+        uses(
+                name = "Setup JDK 21",
                 action = SetupJava(
                     distribution = SetupJava.Distribution.Temurin,
                     javaVersion = "21",
                 ),
                 env = mapOf("GITHUB_TOKEN" to expr { secrets.GITHUB_TOKEN }),
-            )
-        }
+        )
         run(
             command = shell($$"""echo "jvm.toolchain.version=21" >> local.properties"""),
         )
@@ -770,13 +755,6 @@ class WithMatrix(
                     timeoutMinutes_Untyped = "60",
                     command_Untyped = """./gradlew """ + matrix.gradleArgs,
                 ),
-                env =
-                    if (matrix.isUbuntu) {
-                        mapOf("JAVA_HOME" to "/usr/lib/jvm/temurin-21-jdk-amd64")
-                    }
-                    else {
-                        emptyMap()
-                    }
             )
     }
 
@@ -789,13 +767,6 @@ class WithMatrix(
                         timeoutMinutes_Untyped = "60",
                         command_Untyped = "./gradlew check " + matrix.gradleArgs,
                     ),
-                    env =
-                        if (matrix.isUbuntu) {
-                            mapOf("JAVA_HOME" to "/usr/lib/jvm/temurin-21-jdk-amd64")
-                        }
-                        else {
-                            emptyMap()
-                        }
                 )
             }
         }
