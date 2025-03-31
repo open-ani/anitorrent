@@ -296,6 +296,7 @@ sealed class Runner(
         arch = Arch.X64,
         labels = setOf("ubuntu-20.04"),
     )
+
     object GithubUbuntu2404 : GithubHosted(
         id = "github-ubuntu-2404",
         displayName = "Ubuntu 24.04 x86_64 (GitHub)",
@@ -669,6 +670,7 @@ class WithMatrix(
                 append(matrix.gradleArgs)
             },
         ),
+        env = env,
     )
 
     /**
@@ -686,12 +688,12 @@ class WithMatrix(
 
     fun JobBuilder<*>.installJdk() {
         uses(
-                name = "Setup JDK 21",
-                action = SetupJava(
-                    distribution = SetupJava.Distribution.Temurin,
-                    javaVersion = "21",
-                ),
-                env = mapOf("GITHUB_TOKEN" to expr { secrets.GITHUB_TOKEN }),
+            name = "Setup JDK 21",
+            action = SetupJava(
+                distribution = SetupJava.Distribution.Temurin,
+                javaVersion = "21",
+            ),
+            env = mapOf("GITHUB_TOKEN" to expr { secrets.GITHUB_TOKEN }),
         )
         run(
             command = shell($$"""echo "jvm.toolchain.version=21" >> local.properties"""),
@@ -748,29 +750,29 @@ class WithMatrix(
                 cacheDisabled = true,
             ),
         )
-            uses(
-                name = "Clean and download dependencies",
-                action = Retry_Untyped(
-                    maxAttempts_Untyped = "3",
-                    timeoutMinutes_Untyped = "60",
-                    command_Untyped = """./gradlew """ + matrix.gradleArgs,
-                ),
-            )
+        uses(
+            name = "Clean and download dependencies",
+            action = Retry_Untyped(
+                maxAttempts_Untyped = "3",
+                timeoutMinutes_Untyped = "60",
+                command_Untyped = """./gradlew """ + matrix.gradleArgs,
+            ),
+        )
     }
 
     fun JobBuilder<*>.gradleCheck() {
         if (matrix.runTests) {
-                uses(
-                    name = "Check",
-                    action = Retry_Untyped(
-                        maxAttempts_Untyped = "2",
-                        timeoutMinutes_Untyped = "60",
-                        command_Untyped = "./gradlew check " + matrix.gradleArgs,
-                    ),
-                )
-            }
+            uses(
+                name = "Check",
+                action = Retry_Untyped(
+                    maxAttempts_Untyped = "2",
+                    timeoutMinutes_Untyped = "60",
+                    command_Untyped = "./gradlew check " + matrix.gradleArgs,
+                ),
+            )
         }
-    
+    }
+
     fun JobBuilder<*>.uploadAnitorrent(): ActionStep<UploadArtifact.Outputs> {
         return uses(
             name = "Upload Anitorrent",
