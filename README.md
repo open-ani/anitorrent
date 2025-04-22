@@ -3,7 +3,7 @@
 A wrapper of the [libtorrent](https://github.com/arvidn/libtorrent) library for Kotlin Multiplatform
 and Android.
 
-This project is part of the [Animeko](https://github.com/openani/animeko) project.
+This project is part of the [Animeko](https://github.com/open-ani/animeko) project.
 It's not a comprehensive wrapper, and only features that were required by Animeko are implemented.
 We are happy to merge Pull Requests that adds new features that suit your needs.
 
