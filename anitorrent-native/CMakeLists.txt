@@ -122,6 +122,7 @@ FetchContent_Declare(
         GIT_TAG v2.0.10
 )
 FetchContent_MakeAvailable(libtorrent)
+target_include_directories(torrent-rasterbar PRIVATE ${Boost_INCLUDE_DIR})
 
 if (NOT ANDROID)
     # JNI
@@ -156,7 +157,7 @@ add_library(anitorrent
         cpp/include/peer_filter.hpp
         cpp/src/peer_filter.cpp
 )
-target_include_directories(anitorrent PRIVATE cpp/include include)
+target_include_directories(anitorrent PRIVATE cpp/include include ${Boost_INCLUDE_DIR})
 
 # Link libraries
 if (ANDROID)

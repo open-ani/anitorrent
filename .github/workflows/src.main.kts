@@ -54,6 +54,7 @@ import io.github.typesafegithub.workflows.domain.JobOutputs
 import io.github.typesafegithub.workflows.domain.Mode
 import io.github.typesafegithub.workflows.domain.Permission
 import io.github.typesafegithub.workflows.domain.RunnerType
+import io.github.typesafegithub.workflows.domain.actions.CustomAction
 import io.github.typesafegithub.workflows.domain.triggers.PullRequest
 import io.github.typesafegithub.workflows.domain.triggers.Push
 import io.github.typesafegithub.workflows.dsl.JobBuilder
@@ -196,7 +197,8 @@ class MatrixInstance(
 
         if (os == OS.WINDOWS) {
             add(quote("-DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake"))
-            add(quote("-DBoost_INCLUDE_DIR=C:/vcpkg/installed/x64-windows/include"))
+            val boostTriplet = if (arch == Arch.AARCH64) "arm64-windows" else "x64-windows"
+            add(quote("-DBoost_INCLUDE_DIR=C:/vcpkg/installed/$boostTriplet/include"))
         }
 
         add(quote("-Dorg.gradle.jvmargs=-Xmx${gradleHeap}"))
@@ -263,6 +265,14 @@ sealed class Runner(
         os = OS.WINDOWS,
         arch = Arch.X64,
         labels = setOf("windows-2022"),
+    )
+
+    object GithubWindows11Arm64 : GithubHosted(
+        id = "github-windows-11-arm64",
+        displayName = "Windows 11 AArch64 (GitHub)",
+        os = OS.WINDOWS,
+        arch = Arch.AARCH64,
+        labels = setOf("windows-11-arm"),
     )
 
     object GithubMacOS13 : GithubHosted(
@@ -359,6 +369,23 @@ val buildMatrixInstances = listOf(
         buildAllAndroidAbis = false,
     ),
     MatrixInstance(
+        runner = Runner.GithubWindows11Arm64,
+        uploadApk = false,
+        buildAnitorrent = true,
+        buildAnitorrentSeparately = false,
+        composeResourceTriple = "windows-arm64",
+        gradleHeap = "4g",
+        kotlinCompilerHeap = "4g",
+        gradleParallel = true,
+        // Windows ARM64 does not have the JDK 8 toolchain used by the desktop Kotlin target.
+        runTests = false,
+        uploadDesktopInstallers = true,
+        extraGradleArgs = listOf(
+            "-P$ANI_ANDROID_ABIS=arm64-v8a",
+        ),
+        buildAllAndroidAbis = false,
+    ),
+    MatrixInstance(
         runner = Runner.GithubUbuntu2404,
         name = "Ubuntu 24.04 LTS x86_64",
         uploadApk = false,
@@ -410,6 +437,7 @@ fun getBuildJobBody(matrix: MatrixInstance): JobBuilder<BuildJobOutputs>.() -> U
     with(WithMatrix(matrix)) {
         freeSpace()
         installJdk()
+        setupAndroidSdkForWindowsArm64()
         installNativeDeps()
         chmod777()
         setupGradle()
@@ -417,7 +445,7 @@ fun getBuildJobBody(matrix: MatrixInstance): JobBuilder<BuildJobOutputs>.() -> U
         gradleCheck()
         runGradle(
             name = "Build anitorrent",
-            tasks = ["buildAnitorrent", "copyNativeJarForCurrentPlatform"],
+            tasks = arrayOf("buildAnitorrent", "copyNativeJarForCurrentPlatform"),
         )
         uploadAnitorrent()
 
@@ -557,13 +585,14 @@ workflow(
 
                 freeSpace()
                 installJdk()
+                setupAndroidSdkForWindowsArm64()
                 installNativeDeps()
                 chmod777()
                 setupGradle()
 
                 runGradle(
                     name = "Update Release Version Name",
-                    tasks = ["updateReleaseVersionNameFromGit"],
+                    tasks = arrayOf("updateReleaseVersionNameFromGit"),
                     env = mapOf(
                         "GITHUB_TOKEN" to expr { secrets.GITHUB_TOKEN },
                         "GITHUB_REPOSITORY" to expr { secrets.GITHUB_REPOSITORY },
@@ -575,7 +604,7 @@ workflow(
 
                 runGradle(
                     name = "Build anitorrent",
-                    tasks = ["buildAnitorrent", "copyNativeJarForCurrentPlatform"],
+                    tasks = arrayOf("buildAnitorrent", "copyNativeJarForCurrentPlatform"),
                 )
                 // no check
                 uploadAnitorrent()
@@ -588,12 +617,14 @@ workflow(
     )
 
     val win = addJob(buildMatrixInstances[Runner.GithubWindowsServer2019])
+    val winArm64 = addJob(buildMatrixInstances[Runner.GithubWindows11Arm64])
     val macAarch64 = addJob(buildMatrixInstances[Runner.SelfHostedMacOS15])
     val ubuntu = addJob(buildMatrixInstances[Runner.GithubUbuntu2404])
-    addJob(buildMatrixInstances[Runner.GithubMacOS13], needs = listOf(win, macAarch64, ubuntu)) { matrix ->
+    addJob(buildMatrixInstances[Runner.GithubMacOS13], needs = listOf(win, winArm64, macAarch64, ubuntu)) { matrix ->
         with(WithMatrix(matrix)) {
             listOf(
                 OS.WINDOWS to Arch.X64,
+                OS.WINDOWS to Arch.AARCH64,
                 OS.MACOS to Arch.AARCH64,
                 OS.UBUNTU to Arch.X64,
             ).forEach { (os, arch) ->
@@ -607,7 +638,7 @@ workflow(
 
             run(command = "ls -l anitorrent-native/build/native-jars")
             runGradle(
-                tasks = ["publish"],
+                tasks = arrayOf("publish"),
                 env = mapOf(
                     "ORG_GRADLE_PROJECT_mavenCentralUsername" to expr { secrets["ORG_GRADLE_PROJECT_mavenCentralUsername"]!! },
                     "ORG_GRADLE_PROJECT_mavenCentralPassword" to expr { secrets["ORG_GRADLE_PROJECT_mavenCentralPassword"]!! },
@@ -735,6 +766,32 @@ class WithMatrix(
         }
     }
 
+    fun JobBuilder<*>.setupAndroidSdkForWindowsArm64() {
+        if (matrix.isWindowsAArch64) {
+            uses(
+                name = "Setup Android SDK",
+                action = CustomAction(
+                    actionOwner = "android-actions",
+                    actionName = "setup-android",
+                    actionVersion = "v3",
+                    inputs = mapOf(
+                        "accept-android-sdk-licenses" to "false",
+                        "packages" to "platform-tools",
+                    ),
+                ),
+            )
+            run(
+                name = "Install Android platform",
+                command = shell(
+                    """
+                    1..20 | ForEach-Object { "y" } | sdkmanager --licenses
+                    sdkmanager "platforms;android-34"
+                    """.trimIndent(),
+                ),
+            )
+        }
+    }
+
     fun JobBuilder<*>.chmod777() {
         if (matrix.isUnix) {
             run(
@@ -821,6 +878,7 @@ val MatrixInstance.isUnix get() = (os == OS.UBUNTU) or (os == (OS.MACOS))
 
 val MatrixInstance.isMacOSAArch64 get() = (os == OS.MACOS) and (arch == Arch.AARCH64)
 val MatrixInstance.isMacOSX64 get() = (os == OS.MACOS) and (arch == Arch.X64)
+val MatrixInstance.isWindowsAArch64 get() = (os == OS.WINDOWS) and (arch == Arch.AARCH64)
 
 // only for highlighting (though this does not work in KT 2.1.0)
 fun shell(@Language("shell") command: String) = command

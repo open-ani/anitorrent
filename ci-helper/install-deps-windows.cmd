@@ -2,8 +2,14 @@
 
 @REM 直接用 vcpkg install boost 也可以跑, 但是这会在 CI 上装一小时, 所以就只装了最少的能过编译的包
 
-vcpkg install openssl:x64-windows boost-variant:x64-windows boost-system:x64-windows boost-range:x64-windows boost-crc:x64-windows boost-logic:x64-windows boost-parameter:x64-windows boost-asio:x64-windows boost-variant2:x64-windows boost-multi-index:x64-windows boost-multiprecision:x64-windows
-@REM vcpkg install openssl:x64-windows boost:x64-windows
+if "%PROCESSOR_ARCHITECTURE%"=="ARM64" (
+  set VCPKG_TRIPLET=arm64-windows
+) else (
+  set VCPKG_TRIPLET=x64-windows
+)
+
+vcpkg install openssl:%VCPKG_TRIPLET% boost-variant:%VCPKG_TRIPLET% boost-system:%VCPKG_TRIPLET% boost-range:%VCPKG_TRIPLET% boost-crc:%VCPKG_TRIPLET% boost-logic:%VCPKG_TRIPLET% boost-parameter:%VCPKG_TRIPLET% boost-asio:%VCPKG_TRIPLET% boost-variant2:%VCPKG_TRIPLET% boost-multi-index:%VCPKG_TRIPLET% boost-multiprecision:%VCPKG_TRIPLET%
+@REM vcpkg install openssl:%VCPKG_TRIPLET% boost:%VCPKG_TRIPLET%
 
 choco install swig -y
 choco install openssl -y

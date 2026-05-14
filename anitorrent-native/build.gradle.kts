@@ -272,10 +272,16 @@ val configureAnitorrent = tasks.register("configureAnitorrent", Exec::class.java
             add("Ninja")
         } else {
             getPropertyOrNull("CMAKE_TOOLCHAIN_FILE")?.let { add("-DCMAKE_TOOLCHAIN_FILE=${it.sanitize()}") }
+            if (getArch() == Arch.AARCH64) {
+                add("-DVCPKG_TARGET_TRIPLET=arm64-windows")
+            }
             if (getPropertyOrNull("USE_NINJA")?.toBooleanStrict() == true) {
                 add("-DCMAKE_MAKE_PROGRAM=${ninja.sanitize()}")
                 add("-G")
                 add("Ninja")
+            } else if (getArch() == Arch.AARCH64) {
+                add("-A")
+                add("ARM64")
             }
         }
         add("-S")
@@ -435,6 +441,16 @@ val copyNativeFiles by tasks.registering {
                         put("SSL_EAY_RELEASE_${index}", file)
                     }
                 }
+                map["OPENSSL_CRYPTO_LIBRARY:FILEPATH"]?.let {
+                    findDll(File(it)).forEachIndexed { index, file ->
+                        put("OPENSSL_CRYPTO_LIBRARY_${index}", file)
+                    }
+                }
+                map["OPENSSL_SSL_LIBRARY:FILEPATH"]?.let {
+                    findDll(File(it)).forEachIndexed { index, file ->
+                        put("OPENSSL_SSL_LIBRARY_${index}", file)
+                    }
+                }
             }
         }
 
@@ -450,7 +466,7 @@ tasks.withType(KotlinJvmCompile::class) {
     mustRunAfter(generateSwigImpl)
 }
 
-val supportedOsTriples = listOf("macos-aarch64", "macos-x64", "windows-x64", "linux-x64")
+val supportedOsTriples = listOf("macos-aarch64", "macos-x64", "windows-x64", "windows-arm64", "linux-x64")
 
 val nativeJarsDir = layout.buildDirectory.dir("native-jars")
 val nativeJarForCurrentPlatform = tasks.register("nativeJarForCurrentPlatform", Jar::class.java) {
@@ -504,7 +520,11 @@ afterEvaluate {
         publications {
             getByName("desktop", MavenPublication::class) {
                 val platforms = if (getLocalProperty("ani.publishing.onlyHostOS") == "true") {
-                    listOf("macos-aarch64")
+                    if (getOs() == Os.Windows && getArch() == Arch.AARCH64) {
+                        listOf(getOsTriple())
+                    } else {
+                        listOf("macos-aarch64")
+                    }
                 } else {
                     supportedOsTriples
                 }
